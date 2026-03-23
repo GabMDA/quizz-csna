@@ -248,7 +248,82 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.chrono-widget {
+  position: absolute;
+  top: 50%;
+  right: 1.5rem;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.chrono-display {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.chrono-icon {
+  font-size: 1.1rem;
+  opacity: 0.7;
+}
+
+.chrono-display.running .chrono-icon {
+  animation: pulse-clock 1s ease-in-out infinite;
+}
+
+@keyframes pulse-clock {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; color: var(--accent); }
+}
+
+.chrono-time {
+  min-width: 5.2rem;
+  text-align: left;
+}
+
+.chrono-time.idle { color: var(--text-dim); }
+.chrono-time.running { color: var(--green); }
+.chrono-time.stopped { color: var(--orange); }
+
+.chrono-reset {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chrono-reset:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
 @media(max-width:640px) {
+  .chrono-widget {
+    position: static;
+    transform: none;
+    flex-direction: row;
+    gap: 0.6rem;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+  .chrono-display { font-size: 0.85rem; }
   .header h1 { font-size: 1.2rem; }
   .container { padding: 1rem; }
   .question-card { padding: 0.9rem; }
@@ -258,6 +333,13 @@ body {
 <body>
 
 <div class="header">
+  <div class="chrono-widget" id="chronoWidget">
+    <div class="chrono-display" id="chronoDisplay">
+      <span class="chrono-icon">⏱</span>
+      <span class="chrono-time idle" id="chronoTime">00:00:00</span>
+    </div>
+    <button class="chrono-reset" onclick="resetChrono()">reset chrono</button>
+  </div>
   <h1>QCM CSNA – Stormshield Network Security v4.x</h1>
   <div class="subtitle">Révision complète · Pages 86 → 478 · 5 questions par sous-partie</div>
   <div class="score-bar">
@@ -885,6 +967,44 @@ let correct = 0;
 let wrong = 0;
 let qIndex = 0;
 
+// =================== CHRONO ===================
+let chronoInterval = null;
+let chronoStart = null;
+let chronoState = 'idle'; // idle | running
+
+function startChrono() {
+  if (chronoState === 'running') return;
+  chronoState = 'running';
+  chronoStart = Date.now();
+  const el = document.getElementById('chronoTime');
+  const display = document.getElementById('chronoDisplay');
+  el.classList.remove('idle','stopped');
+  el.classList.add('running');
+  display.classList.add('running');
+  chronoInterval = setInterval(updateChrono, 1000);
+}
+
+function updateChrono() {
+  const elapsed = Math.floor((Date.now() - chronoStart) / 1000);
+  const h = String(Math.floor(elapsed / 3600)).padStart(2,'0');
+  const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2,'0');
+  const s = String(elapsed % 60).padStart(2,'0');
+  document.getElementById('chronoTime').textContent = `${h}:${m}:${s}`;
+}
+
+function resetChrono() {
+  clearInterval(chronoInterval);
+  chronoInterval = null;
+  chronoStart = null;
+  chronoState = 'idle';
+  const el = document.getElementById('chronoTime');
+  const display = document.getElementById('chronoDisplay');
+  el.textContent = '00:00:00';
+  el.classList.remove('running','stopped');
+  el.classList.add('idle');
+  display.classList.remove('running');
+}
+
 function init() {
   const nav = document.getElementById('nav');
   const content = document.getElementById('content');
@@ -972,6 +1092,9 @@ function selectOption(si, subi, qi, oi) {
   const card = document.getElementById(`q-${si}-${subi}-${qi}`);
   if (card.classList.contains('answered-correct') || card.classList.contains('answered-wrong')) return;
   
+  // Start chrono on first interaction
+  if (chronoState === 'idle') startChrono();
+  
   card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
   card.querySelectorAll('.option')[oi].classList.add('selected');
   card.querySelector('.btn-validate').disabled = false;
@@ -1014,6 +1137,7 @@ function updateScore() {
 function resetAll() {
   correct = 0; wrong = 0; answered = 0;
   updateScore();
+  resetChrono();
   document.querySelectorAll('.question-card').forEach(card => {
     card.classList.remove('answered-correct','answered-wrong');
     card.querySelectorAll('.option').forEach(o => {
