@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QCM CSNA Stormshield v4.x – Révision complète</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --bg: #0c0f14;
+  --surface: #151921;
+  --surface2: #1c2230;
+  --border: #2a3142;
+  --text: #e2e6ef;
+  --text-dim: #8892a6;
+  --accent: #4a9eff;
+  --accent2: #6c5ce7;
+  --green: #00d68f;
+  --red: #ff6b6b;
+  --orange: #ffa94d;
+  --yellow: #ffd43b;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.header {
+  background: linear-gradient(135deg, #1a1f2e 0%, #0c0f14 50%, #141825 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 2rem;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+.header .subtitle {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+}
+
+.score-bar {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 0.8rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+
+.score-bar span { color: var(--text-dim); }
+.score-bar .correct { color: var(--green); }
+.score-bar .wrong { color: var(--red); }
+.score-bar .total { color: var(--accent); }
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.nav-sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.nav-btn {
+  padding: 0.4rem 0.8rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Outfit', sans-serif;
+}
+
+.nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.nav-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.section-block {
+  margin-bottom: 2.5rem;
+  display: none;
+}
+
+.section-block.visible { display: block; }
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--accent);
+}
+
+.subsection-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent2);
+  margin: 1.5rem 0 0.8rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--accent2);
+}
+
+.question-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s;
+}
+
+.question-card.answered-correct { border-color: var(--green); }
+.question-card.answered-wrong { border-color: var(--red); }
+
+.q-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-bottom: 0.4rem;
+}
+
+.q-text {
+  font-size: 0.92rem;
+  font-weight: 500;
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}
+
+.options { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.option:hover { border-color: var(--accent); background: rgba(74,158,255,0.06); }
+.option.selected { border-color: var(--accent); background: rgba(74,158,255,0.1); }
+.option.correct-answer { border-color: var(--green); background: rgba(0,214,143,0.1); }
+.option.wrong-answer { border-color: var(--red); background: rgba(255,107,107,0.1); }
+.option.disabled { pointer-events: none; opacity: 0.7; }
+.option.disabled.correct-answer { opacity: 1; }
+
+.option-letter {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.75rem;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--border);
+  color: var(--text-dim);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.explanation {
+  margin-top: 0.7rem;
+  padding: 0.8rem;
+  background: rgba(74,158,255,0.06);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  display: none;
+  line-height: 1.5;
+}
+
+.explanation.visible { display: block; }
+
+.btn-validate {
+  margin-top: 0.6rem;
+  padding: 0.5rem 1.2rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-validate:hover { filter: brightness(1.15); }
+.btn-validate:disabled { opacity: 0.4; cursor: default; }
+
+.show-all-btn {
+  display: block;
+  margin: 1rem auto 2rem;
+  padding: 0.6rem 1.5rem;
+  font-size: 0.85rem;
+}
+
+.reset-btn {
+  background: var(--red);
+}
+
+.progress-mini {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-align: right;
+  margin-bottom: 0.5rem;
+}
+
+@media(max-width:640px) {
+  .header h1 { font-size: 1.2rem; }
+  .container { padding: 1rem; }
+  .question-card { padding: 0.9rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>QCM CSNA – Stormshield Network Security v4.x</h1>
+  <div class="subtitle">Révision complète · Pages 86 → 478 · 5 questions par sous-partie</div>
+  <div class="score-bar">
+    <span>Score : <span class="correct" id="scoreOk">0</span> / <span class="wrong" id="scoreKo">0</span></span>
+    <span>|</span>
+    <span>Répondu : <span class="total" id="scoreTotal">0</span> / <span id="scoreMax">0</span></span>
+  </div>
+</div>
+
+<div class="container">
+  <div class="nav-sections" id="nav"></div>
+  <div id="content"></div>
+  <button class="btn-validate show-all-btn" id="showAllBtn" onclick="showAll()">Afficher toutes les sections</button>
+  <button class="btn-validate show-all-btn reset-btn" onclick="resetAll()">Réinitialiser tout</button>
+</div>
+
+<script>
+const DATA = [
+// ===================== 1. TRACES ET SUPERVISION (ANNEXE) =====================
+{
+  section: "Traces et supervision (Annexe)",
+  subs: [
+    {
+      title: "Activation du Syslog",
+      questions: [
+        {q:"Combien de serveurs Syslog peuvent être activés simultanément sur un firewall Stormshield ?",o:["8","4","1","2"],a:1,e:"Il est possible d'activer jusqu'à 4 serveurs Syslog en même temps, chacun dans un profil distinct."},
+        {q:"Quels protocoles de transmission sont supportés pour l'envoi des traces Syslog ?",o:["TCP et TLS uniquement","UDP, TCP et TLS","UDP uniquement","UDP et TCP"],a:1,e:"Les protocoles UDP, TCP et TLS sont disponibles pour la transmission des traces Syslog."},
+        {q:"Quel format Syslog respecte la RFC 5424 ?",o:["LEGACY-LONG","Toutes les options","RFC5424","LEGACY"],a:2,e:"Le format RFC5424 est celui qui respecte la RFC 5424. LEGACY est limité à 1024 caractères et LEGACY-LONG n'a pas de limite."},
+        {q:"Le port standard pour Syslog en TLS est :",o:["TCP/601","TCP/6514","UDP/514","TCP/1514"],a:1,e:"Le port standard pour syslog-tls est TCP/6514. UDP/514 est pour syslog UDP et TCP/601 pour syslog-conn TCP."},
+        {q:"Les paramètres Serveur de secours et Port de secours sont disponibles avec quels protocoles ?",o:["TCP ou TLS uniquement","UDP, TCP et TLS","TLS uniquement","UDP uniquement"],a:0,e:"Les paramètres Serveur de secours et Port de secours ne peuvent être utilisés que si les protocoles TCP ou TLS sont sélectionnés."}
+      ]
+    },
+    {
+      title: "Stormshield Log Supervisor (SLS)",
+      questions: [
+        {q:"SLS (Stormshield Log Supervisor) peut être déployé sur quels environnements virtuels ?",o:["KVM et Docker","AWS et Azure uniquement","VMware Workstation uniquement","VMware ESXi et Microsoft Hyper-V"],a:3,e:"SLS peut être déployé sur VMware ESXi (via OVA) et Microsoft Hyper-V (via VHD)."},
+        {q:"Quel est le rôle principal de SLS ?",o:["Configurer les règles de filtrage à distance","Collecter et analyser les traces des firewalls en temps réel","Gérer les mises à jour du firewall","Fournir un antivirus centralisé"],a:1,e:"SLS collecte les données de streaming des firewalls SNS, les analyse et fournit des aperçus en temps réel."},
+        {q:"SLS permet un contrôle des réseaux d'entreprise distribués depuis :",o:["Un seul emplacement centralisé","Via des agents installés sur chaque poste","Chaque firewall individuellement","Uniquement via la ligne de commande"],a:0,e:"SLS offre un contrôle depuis un seul emplacement pour les réseaux d'entreprise distribués."},
+        {q:"SLS collecte les données en provenance des firewalls via :",o:["SNMP","Un agent propriétaire","Le streaming de données","FTP"],a:2,e:"SLS collecte les données de streaming qui proviennent des firewalls Stormshield Network Security."},
+        {q:"Où trouver la documentation technique de SLS ?",o:["Dans l'interface du firewall","Sur le portail captif","Sur mystormshield.eu uniquement","Sur documentation.stormshield.eu"],a:3,e:"La documentation technique de SLS est accessible sur le site documentation.stormshield.eu."}
+      ]
+    },
+    {
+      title: "Notification par e-mail",
+      questions: [
+        {q:"Dans quel menu configure-t-on les notifications par e-mail ?",o:["Supervision ⇒ Notifications","Configuration ⇒ Notifications ⇒ Alertes e-mails","Configuration ⇒ Politique de sécurité ⇒ Emails","Configuration ⇒ Système ⇒ Alertes"],a:1,e:"La configuration des notifications par e-mail s'effectue dans Configuration ⇒ Notifications ⇒ Alertes e-mails."},
+        {q:"Les destinataires des notifications peuvent être :",o:["Uniquement des groupes Active Directory","Des adresses e-mail ou des utilisateurs LDAP","Uniquement des utilisateurs LDAP","Uniquement des adresses e-mail"],a:1,e:"Les destinataires peuvent être des adresses e-mail ou des utilisateurs enregistrés dans la base LDAP."},
+        {q:"Quelle est la plage de fréquence d'envoi des notifications e-mail ?",o:["10 à 100 minutes","1 à 1000 minutes","1 à 60 minutes","5 à 500 minutes"],a:1,e:"La fréquence d'envoi doit être comprise entre 1 et 1000 minutes."},
+        {q:"Quels niveaux d'alarmes peuvent être envoyés par notification e-mail ?",o:["Uniquement les alarmes mineures","Toutes les alarmes sans distinction","Majeures et mineures, ou majeures uniquement, ou rien","Uniquement les alarmes majeures"],a:2,e:"On peut choisir de ne rien envoyer, d'envoyer uniquement les alarmes majeures, ou les alarmes majeures et mineures."},
+        {q:"L'adresse e-mail de l'émetteur des notifications par défaut est :",o:["admin@firewall.local","nomdufirewall@Domaine_DNS","alert@firewall_name","noreply@stormshield.eu"],a:1,e:"L'adresse e-mail de l'émetteur par défaut est « nomdufirewall@Domaine_DNS »."}
+      ]
+    },
+    {
+      title: "Rapports",
+      questions: [
+        {q:"À partir de quelles données les rapports sont-ils calculés ?",o:["Les résultats d'analyse antivirale","Les fichiers de configuration","Les données SNMP","Les fichiers de traces"],a:3,e:"Les rapports sont calculés à partir des fichiers de traces et sont stockés dans une base de données interne."},
+        {q:"Où peut-on activer ou désactiver les rapports individuellement ?",o:["Dans le menu Filtrage","Dans les paramètres système","Dans la configuration réseau","Dans l'onglet LISTE DES RAPPORTS"],a:3,e:"On peut choisir les rapports à activer/désactiver dans l'onglet LISTE DES RAPPORTS."},
+        {q:"Les rapports sont stockés dans :",o:["Une base de données interne au firewall","Le cloud Stormshield","Un fichier CSV externe","Un serveur Syslog distant"],a:0,e:"Les rapports sont stockés dans une base de données interne au firewall."},
+        {q:"Les rapports permettent principalement de :",o:["Gérer les certificats","Mettre à jour le firmware","Analyser les tendances du trafic et de l'activité","Configurer les règles de filtrage"],a:2,e:"Les rapports permettent d'analyser les tendances du trafic et de l'activité réseau à partir des traces."},
+        {q:"La configuration des rapports se trouve dans :",o:["Configuration ⇒ Notifications ⇒ Traces","Configuration ⇒ Notifications ⇒ Rapports","Supervision ⇒ Rapports","Les deux dernières réponses"],a:0,e:"La configuration des rapports s'effectue dans le menu relatif aux traces et notifications."}
+      ]
+    }
+  ]
+},
+// ===================== 2. LES OBJETS =====================
+{
+  section: "Les objets",
+  subs: [
+    {
+      title: "Généralités",
+      questions: [
+        {q:"Combien de familles d'objets existent sur un firewall Stormshield ?",o:["2","4","5","3"],a:1,e:"Il y a 4 familles : Réseau, URL, Certificats et PKI, Services Web."},
+        {q:"Quel est l'avantage principal de l'utilisation d'objets plutôt que de valeurs directes ?",o:["Meilleure performance réseau","Compression du trafic","Chiffrement automatique des données","Modification centralisée de la valeur sans parcourir tous les menus"],a:3,e:"Si une valeur change, il suffit de modifier la valeur de l'objet sans se rendre dans tous les menus où il est utilisé."},
+        {q:"Parmi les noms suivants, lequel est interdit pour un objet ?",o:["Broadcast","DMZ_network","Srv_web_01","MonServeur"],a:0,e:"'Broadcast' fait partie des noms d'objets interdits, tout comme Any, None, Anonymous, Internet, All, Blackhole."},
+        {q:"La syntaxe des noms d'objets est :",o:["Sensible uniquement pour les objets réseau","Configurable par l'administrateur","Sensible à la casse","Insensible à la casse"],a:3,e:"La syntaxe des noms des objets est insensible à la casse."},
+        {q:"Quel préfixe est interdit pour les noms d'objets créés par l'administrateur ?",o:["Net_","Srv_","Firewall_","Obj_"],a:2,e:"Les préfixes interdits incluent Firewall_, Network_, Ephemeral_ et Global_."}
+      ]
+    },
+    {
+      title: "Les objets réseau",
+      questions: [
+        {q:"Quelle est la fréquence de résolution DNS des objets FQDN et hôte dynamique ?",o:["Toutes les cinq minutes","Toutes les heures","Toutes les minutes","Toutes les dix minutes"],a:0,e:"Les objets FQDN et hôte dynamique sont résolus toutes les cinq minutes par le firewall."},
+        {q:"Les objets implicites sont :",o:["Toujours de type réseau","Importés depuis un fichier CSV","Créés automatiquement par le firewall et en lecture seule","Créés par l'administrateur et modifiables"],a:2,e:"Les objets implicites sont créés et gérés automatiquement par le firewall et sont en lecture seule."},
+        {q:"L'objet « Network_internals » regroupe :",o:["Tous les réseaux accessibles via les interfaces internes","Les réseaux des interfaces externes","Tous les réseaux configurés","Uniquement le réseau de l'interface IN"],a:0,e:"L'objet Network_internals regroupe tous les réseaux accessibles via les interfaces internes."},
+        {q:"Comment exporter la base d'objets réseau ?",o:["En fichier PDF","En fichier CSV","En fichier XML","En fichier JSON"],a:1,e:"Il est possible d'exporter l'intégralité de la base d'objets réseau dans un fichier CSV."},
+        {q:"Un objet de type « Routeur » permet de :",o:["Configurer le protocole de routage dynamique","Renseigner plusieurs passerelles pour un routage par répartition de charge","Définir un serveur DNS","Créer un tunnel VPN"],a:1,e:"Un objet Routeur permet de renseigner une ou plusieurs passerelles pour un routage par répartition de charge avec ou sans passerelle de secours."}
+      ]
+    },
+    {
+      title: "Convention de nommage",
+      questions: [
+        {q:"Les objets dynamiques (FQDN et hôte dynamique) génèrent quel type de trafic ?",o:["Du trafic SNMP","Du trafic HTTP","Des requêtes LDAP","Des requêtes DNS"],a:3,e:"Les objets dynamiques génèrent des requêtes DNS régulières pour leur résolution."},
+        {q:"Pourquoi est-il déconseillé de créer plusieurs objets portant la même valeur ?",o:["Cela provoque une erreur système","C'est impossible sur Stormshield","Cela complique la lecture du filtrage/NAT et la maintenance","Cela simplifie la lecture des menus"],a:2,e:"Créer des doublons complique la lecture des règles de filtrage/NAT et la maintenance."},
+        {q:"Lors de la création d'un objet, les champs obligatoires sont :",o:["Nom et commentaire","Nom et valeur","Valeur et commentaire","Nom, valeur et commentaire"],a:1,e:"Les deux champs obligatoires sont le nom et la valeur. Le commentaire est facultatif."},
+        {q:"Les objets peuvent être créés depuis :",o:["Le menu Objets ou par création contextuelle depuis n'importe quel menu","Uniquement via import CSV","Uniquement le menu Configuration ⇒ Objets","Uniquement la CLI"],a:0,e:"La création s'effectue depuis Configuration ⇒ Objets, le menu Objets, ou par création contextuelle depuis n'importe quel menu."},
+        {q:"Un objet temps nommé « workhours » existe :",o:["Dans la configuration usine et est modifiable","Uniquement en version CSNE","Uniquement après création manuelle","Après activation du service NTP"],a:0,e:"Un objet temps nommé workhours modifiable existe dans la configuration usine."}
+      ]
+    }
+  ]
+},
+// ===================== 3. CONFIGURATION RÉSEAU =====================
+{
+  section: "Configuration réseau",
+  subs: [
+    {
+      title: "Modes d'intégration (bridge, routeur, hybride)",
+      questions: [
+        {q:"Quels sont les trois modes d'intégration d'un firewall Stormshield ?",o:["Bridge, NAT, proxy","Simple, expert, cluster","Inline, passif, TAP","Transparent, avancé, hybride"],a:3,e:"Les trois modes sont : transparent (bridge), avancé (routeur) et hybride (bridge + routeur)."},
+        {q:"En mode transparent, toutes les interfaces du firewall sont :",o:["Incluses dans un bridge qui porte une seule adresse IP","Configurées avec des adresses IP différentes","Désactivées sauf l'interface OUT","Configurées en DHCP"],a:0,e:"En mode transparent, toutes les interfaces sont incluses dans un bridge portant une seule adresse IP du réseau local."},
+        {q:"En mode avancé (routeur), chaque interface est configurée avec :",o:["La même adresse IP","Aucune adresse IP","Un réseau IP particulier","Une adresse MAC uniquement"],a:2,e:"En mode avancé, chaque interface possède un plan d'adressage IP spécifique (segmentation physique et logique)."},
+        {q:"Le mode hybride combine :",o:["Le mode transparent et le mode proxy","Le mode transparent et le mode avancé","Le NAT et le routage dynamique","Le VPN et le filtrage"],a:1,e:"Le mode hybride est une combinaison des modes bridge et avancé : certaines interfaces dans un bridge et d'autres indépendantes."},
+        {q:"Existe-t-il un assistant pour configurer un mode d'intégration spécifique ?",o:["Oui, via la CLI uniquement","Non, il n'existe pas d'assistant dédié","Oui, uniquement pour le mode transparent","Oui, dans le menu Configuration ⇒ Réseau"],a:1,e:"Il n'existe pas d'assistant menant à l'une de ces intégrations. La mise en œuvre s'effectue manuellement."}
+      ]
+    },
+    {
+      title: "Types d'interfaces",
+      questions: [
+        {q:"Les interfaces virtuelles de type VLAN sont créées dans quel menu ?",o:["Configuration ⇒ Système","Configuration ⇒ Objets ⇒ Réseau","Configuration ⇒ Réseau ⇒ Interfaces virtuelles","Configuration ⇒ VPN"],a:2,e:"Les interfaces virtuelles (VLAN, bridge, etc.) sont créées dans Configuration ⇒ Réseau ⇒ Interfaces virtuelles."},
+        {q:"Un bridge permet la segmentation :",o:["Physique d'un réseau logique","Physique uniquement","Logique uniquement","Ni physique ni logique"],a:0,e:"Le bridge permet la segmentation physique d'un réseau logique (même plan d'adressage sur différentes interfaces)."},
+        {q:"Dans un bridge, les interfaces partagent :",o:["Aucune configuration réseau","Le même plan d'adressage","Chacune leur propre réseau","Des adresses IP différentes"],a:1,e:"Les interfaces dans un bridge partagent le même plan d'adressage réseau."},
+        {q:"L'interface externe d'un firewall en mode routeur peut porter :",o:["Aucune adresse IP","Uniquement une adresse privée","Une adresse IP publique ou obtenue par DHCP","Uniquement une adresse publique"],a:2,e:"L'interface externe peut porter une adresse IP publique configurée statiquement ou obtenue dynamiquement par DHCP."},
+        {q:"Lorsqu'une interface obtient son adresse par DHCP, quel objet est automatiquement créé ?",o:["DHCP_<nom_interface>","Firewall_<nom_interface>_router","Router_<nom_interface>","Gateway_<nom_interface>"],a:1,e:"Un objet nommé Firewall_<nom_interface>_router est créé automatiquement et peut être utilisé comme passerelle par défaut."}
+      ]
+    },
+    {
+      title: "Routage système",
+      questions: [
+        {q:"La passerelle par défaut peut être configurée avec :",o:["Uniquement un objet routeur","Uniquement un objet machine","Un objet réseau","Un objet machine ou un objet routeur"],a:3,e:"La passerelle par défaut peut être un objet machine (une seule passerelle) ou un objet routeur (répartition/secours)."},
+        {q:"Le routage statique consiste à :",o:["Activer le routage dynamique OSPF","Renseigner manuellement les routes vers des réseaux distants","Configurer le NAT","Renseigner automatiquement les routes via un protocole"],a:1,e:"Le routage statique consiste à renseigner manuellement les routes vers des réseaux distants."},
+        {q:"Quels paramètres sont obligatoires lors de l'ajout d'une route statique ?",o:["Uniquement le réseau de destination","Réseau de destination et métrique","État, réseau de destination, passerelle, interface","Passerelle et protocole"],a:2,e:"Les paramètres obligatoires sont : État (On/Off), Réseau de destination, Passerelle et Interface de sortie."},
+        {q:"Le trafic qui ne correspond à aucune route est :",o:["Envoyé sur l'interface IN","Rejeté silencieusement","Envoyé vers la passerelle par défaut","Mis en file d'attente"],a:2,e:"Le trafic sans correspondance de route est renvoyé vers la passerelle par défaut."},
+        {q:"Un vérificateur de cohérence est disponible pour :",o:["Les routes statiques","La configuration DNS","Les objets réseau","Les règles de filtrage uniquement"],a:0,e:"Un vérificateur de cohérence de configuration est disponible pour valider les routes statiques."}
+      ]
+    },
+    {
+      title: "Routage avancé",
+      questions: [
+        {q:"Quel logiciel est utilisé pour le routage dynamique sur les firewalls SNS ?",o:["Zebra","BIRD","FRRouting","Quagga"],a:1,e:"Les firewalls SNS utilisent le logiciel BIRD (Internet Routing Daemon) pour le routage dynamique."},
+        {q:"Quels protocoles de routage dynamique sont supportés par BIRD sur SNS ?",o:["EIGRP, OSPF, BGP","OSPF uniquement","RIP, EIGRP, IS-IS","RIP, OSPF, BGP"],a:3,e:"BIRD implémente 3 protocoles : RIP, OSPF et BGP."},
+        {q:"Le routage par politique (PBR) permet de :",o:["Activer le routage dynamique","Bloquer les routes non conformes","Créer des VLANs automatiquement","Spécifier une passerelle dans une règle de filtrage"],a:3,e:"Le PBR permet de spécifier une passerelle dans une règle de filtrage pour diriger un flux vers une passerelle choisie."},
+        {q:"Un objet routeur avec répartition de charge peut distribuer les connexions :",o:["Par adresse IP source ou par connexion","Uniquement par adresse MAC","Par protocole applicatif","Uniquement par round-robin"],a:0,e:"La répartition peut être basée sur l'adresse IP source ou sur les paramètres d'une connexion (IP et ports source/destination)."},
+        {q:"Les réseaux appris par routage dynamique sont ajoutés par défaut :",o:["À la politique de filtrage","Uniquement à la table de routage","Au groupe Network_internals","À la table des réseaux protégés"],a:3,e:"Les réseaux ajoutés par routage dynamique sont ajoutés par défaut à la table des réseaux protégés."}
+      ]
+    },
+    {
+      title: "Ordonnancement des types de routage",
+      questions: [
+        {q:"Quel est l'ordre de priorité du routage (du plus prioritaire au moins prioritaire) ?",o:["Route par défaut > Statique > Dynamique > Politique","Politique > Statique > Par défaut > Dynamique","Route de retour > Objet routeur > Politique > Statique > Dynamique > Par défaut","Statique > Dynamique > Par défaut > Politique"],a:2,e:"L'ordre est : Route de retour > Objet routeur > Routage par politique > Statique > Dynamique > Route par défaut."},
+        {q:"Si aucune passerelle de l'objet routeur n'est joignable dans le routage par politique :",o:["Le trafic est toujours bloqué","Le routage est délégué à la route par défaut ou le trafic est bloqué","Le firewall redémarre le service réseau","Une alarme est levée sans impact sur le trafic"],a:1,e:"Deux options sont possibles : le routage est délégué au routage par défaut ou le trafic est bloqué."},
+        {q:"Si une interface n'est pas utilisée, il est recommandé de :",o:["La désactiver","La configurer en DHCP","La placer dans un bridge","La laisser active par défaut"],a:0,e:"Il est recommandé de désactiver les interfaces non utilisées pour éviter toute arrivée de trafic non souhaitée."},
+        {q:"L'antispoofing est efficace uniquement si :",o:["Le proxy HTTP est activé","Le routage dynamique est activé","Les interfaces sont déclarées comme internes et les routes sont correctement configurées","Le filtrage est désactivé"],a:2,e:"Il faut déclarer les interfaces internes et avoir des routes correctes vers les réseaux pour que l'antispoofing soit efficace."},
+        {q:"Les modes d'inspection IDS et firewall ont quel impact sur l'antispoofing ?",o:["Ils désactivent le routage","Ils renforcent l'antispoofing","Aucun impact","Ils court-circuitent l'antispoofing"],a:3,e:"Les modes d'inspection IDS et firewall court-circuitent le mécanisme d'antispoofing."}
+      ]
+    },
+    {
+      title: "Antispoofing et interfaces protégées",
+      questions: [
+        {q:"L'antispoofing sur une interface interne vérifie que :",o:["L'adresse IP source appartient bien au réseau protégé de cette interface","Le port de destination est autorisé","L'utilisateur est authentifié","Le trafic est chiffré"],a:0,e:"L'antispoofing vérifie que l'adresse IP source d'un paquet arrivant sur une interface interne est cohérente avec le réseau protégé."},
+        {q:"Que se passe-t-il si une route inutile reste dans la table de routage ?",o:["Elle est automatiquement supprimée","Elle améliore les performances","Rien","Elle risque d'entraver le mécanisme d'antispoofing"],a:3,e:"Une route inutile risque d'entraver le mécanisme d'antispoofing. Il ne faut jamais laisser de route inutile."},
+        {q:"Le protocole RSTP ou MSTP peut être activé sur quel type d'interface ?",o:["Bridge (pour la détection de boucles)","Interface GRE","VLAN","Interface physique uniquement"],a:0,e:"La détection de boucles (Spanning Tree) via RSTP ou MSTP peut être activée dans la configuration avancée d'un bridge."},
+        {q:"L'agrégation de liens LACP permet de regrouper jusqu'à :",o:["2 interfaces","4 interfaces","16 interfaces","8 interfaces"],a:3,e:"Jusqu'à 8 interfaces physiques de même vitesse et duplex peuvent être agrégées en LACP."},
+        {q:"L'option « Préserver le routage initial » dans un bridge sert à :",o:["Désactiver le NAT","Chiffrer les trames","Activer le routage dynamique","Garder l'adresse MAC de destination des trames entre interfaces membres"],a:3,e:"Cette option garde l'adresse MAC de destination des trames reçues entre interfaces membres du bridge pour préserver le routage initial."}
+      ]
+    }
+  ]
+},
+// ===================== 4. TRANSLATION D'ADRESSES =====================
+{
+  section: "Translation d'adresses",
+  subs: [
+    {
+      title: "Généralités",
+      questions: [
+        {q:"La translation d'adresses (NAT) a été mise au point principalement pour :",o:["Accélérer le trafic réseau","Faire face à la pénurie d'adresses IPv4","Améliorer la sécurité","Simplifier le routage"],a:1,e:"Les mécanismes de NAT ont été mis au point pour faire face à la pénurie d'adresses IPv4."},
+        {q:"La RFC définissant les adresses IP privées est :",o:["RFC 1918","RFC 2409","RFC 791","RFC 5424"],a:0,e:"La RFC 1918 définit les plages d'adresses IP privées (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)."},
+        {q:"Le NAT permet la modification de quels champs d'un paquet IP ?",o:["Le TTL et les flags","Uniquement l'adresse source","Uniquement le port de destination","Adresse source/destination et port source/destination"],a:3,e:"Le NAT permet la modification de l'adresse source/destination et du port source/destination d'un paquet IP."},
+        {q:"Combien d'adresses contient la plage privée 172.16.0.0/12 ?",o:["65 536","256","16 777 216","1 048 576"],a:3,e:"La plage 172.16.0.0/12 contient 1 048 576 adresses (172.16.0.0 – 172.31.255.255)."},
+        {q:"Le NAT est un mécanisme de quelle couche du modèle OSI ?",o:["Couche 3 et 4 (réseau et transport)","Couche 2 (liaison)","Couche 7 (application)","Couche 1 (physique)"],a:0,e:"Le NAT agit aux couches 3 (adresses IP) et 4 (ports TCP/UDP) du modèle OSI."}
+      ]
+    },
+    {
+      title: "Translation dynamique",
+      questions: [
+        {q:"La translation dynamique masque les adresses d'un réseau privé derrière :",o:["Une adresse multicast","Une seule adresse IP publique","L'adresse du serveur DNS","Plusieurs adresses publiques fixes"],a:1,e:"La translation dynamique translate un réseau privé en une seule adresse IP publique."},
+        {q:"L'objet « ephemeral_fw » utilise quelle plage de ports ?",o:["[1024-65535]","[20000-59999]","[10000-30000]","[49152-65535]"],a:1,e:"L'objet ephemeral_fw utilise la plage de ports [20000-59999]."},
+        {q:"Pourquoi le firewall modifie-t-il le port source lors d'une translation dynamique ?",o:["Pour éviter les conflits quand deux machines utilisent le même port source","Pour le routage","Pour accélérer le trafic","Pour le chiffrement"],a:0,e:"La modification du port source évite les conflits quand deux machines internes utilisent le même port source vers le même serveur."},
+        {q:"Le choix des ports sources dans ephemeral_fw est par défaut :",o:["Basé sur l'adresse IP source","Fixe","Aléatoire","Séquentiel (avec option aléatoire disponible)"],a:3,e:"Par défaut, les ports sont choisis séquentiellement dans la plage, mais une option permet un choix aléatoire."},
+        {q:"Pour translater avec une plage d'adresses (1:1), les plages doivent être :",o:["De type FQDN","De tailles différentes","Uniquement des adresses publiques","De la même taille"],a:3,e:"Les plages doivent être de la même taille car la translation se fait avec une correspondance 1:1."}
+      ]
+    },
+    {
+      title: "Translation statique par port",
+      questions: [
+        {q:"La translation statique par port (PAT/DNAT) permet de :",o:["Créer des tunnels VPN","Masquer tout un réseau derrière une IP","Donner accès à des ressources internes derrière une seule adresse IP publique","Bloquer le trafic entrant"],a:2,e:"La translation statique par port permet de donner accès à des ressources internes derrière une seule adresse IP publique."},
+        {q:"Dans une redirection de port, quel champ est modifié dans le paquet entrant ?",o:["Le TTL","L'adresse MAC","L'adresse de destination (et éventuellement le port)","L'adresse source uniquement"],a:2,e:"Le firewall remplace l'adresse de destination publique par l'adresse privée du serveur interne."},
+        {q:"Pour publier un serveur HTTP interne, la translation statique par port redirige :",o:["Tout le trafic vers le serveur","Le trafic DNS vers le serveur","Uniquement le trafic HTTPS","Le trafic de l'IP publique port 80 vers l'IP privée du serveur port 80"],a:3,e:"La translation redirige les connexions destinées à l'IP publique sur un port spécifique vers le serveur interne."},
+        {q:"La translation statique par port est aussi appelée :",o:["Destination NAT (DNAT)","Full NAT","Double NAT","Source NAT"],a:0,e:"La translation statique par port est un DNAT car elle modifie l'adresse de destination des paquets entrants."},
+        {q:"Plusieurs serveurs internes peuvent-ils partager la même IP publique avec le PAT ?",o:["Non, une IP publique par serveur","Oui, mais uniquement en TCP","Oui, en utilisant des ports de destination différents","Non, sauf avec un load balancer externe"],a:2,e:"Grâce au PAT, plusieurs serveurs peuvent utiliser la même IP publique en utilisant des ports différents."}
+      ]
+    },
+    {
+      title: "Translation statique (bimap)",
+      questions: [
+        {q:"La translation statique (bimap) est une correspondance :",o:["1 port vers 1 port","N adresses vers 1 adresse","N ports vers 1 port","1 adresse privée vers 1 adresse publique"],a:3,e:"La translation statique (bimap) est une correspondance 1:1 entre une adresse privée et une adresse publique."},
+        {q:"Avec une translation statique bimap, les connexions sont possibles dans :",o:["Un seul sens (entrant)","Un seul sens (sortant)","Aucun sens sans règle de filtrage","Les deux sens"],a:3,e:"La bimap permet la correspondance dans les deux sens : sortant (SNAT) et entrant (DNAT)."},
+        {q:"La translation statique est particulièrement utile pour :",o:["Les serveurs nécessitant une adresse publique dédiée","Le blocage du trafic","Le trafic des clients internes","La résolution DNS"],a:0,e:"La translation statique est idéale pour les serveurs devant disposer d'une adresse publique dédiée."},
+        {q:"Dans une bimap, l'objet source après translation contient :",o:["L'adresse privée du serveur","L'adresse de broadcast","L'adresse publique associée","L'adresse du routeur"],a:2,e:"Dans le trafic après translation (sortant), l'adresse source privée est remplacée par l'adresse publique associée."},
+        {q:"Combien de règles de NAT faut-il pour une translation bimap complète ?",o:["3 règles","4 règles","1 règle","2 règles"],a:2,e:"Une seule règle de NAT bimap peut gérer la translation dans les deux sens."}
+      ]
+    },
+    {
+      title: "Menu NAT et ordre d'application",
+      questions: [
+        {q:"Les règles de NAT sont organisées en combien de niveaux (slots) ?",o:["1 seul niveau","4 (implicite, global, local, par défaut)","2 (local et global)","3 (implicite, global, local)"],a:3,e:"Les règles de NAT sont organisées en 3 niveaux : NAT implicite, NAT global et NAT local."},
+        {q:"Les règles de NAT global sont injectées depuis :",o:["SMC (Stormshield Management Center)","Le portail captif","L'interface Web locale","La CLI uniquement"],a:0,e:"Les règles de NAT global sont injectées depuis SMC ou après affichage des politiques globales."},
+        {q:"Si deux règles de NAT se chevauchent, laquelle s'applique ?",o:["La première correspondante dans l'ordre de priorité","La dernière","Aucune des deux","Les deux simultanément"],a:0,e:"Les règles sont lues séquentiellement ; la première règle correspondante dans l'ordre de priorité est appliquée."},
+        {q:"Les règles de NAT implicites sont principalement utilisées pour :",o:["La haute disponibilité","Le VPN SSL","Le filtrage d'URL","La translation des flux Web"],a:0,e:"Les règles de NAT implicites sont principalement ajoutées lors de l'activation de la haute disponibilité."},
+        {q:"Le filtrage est évalué avant ou après le NAT dans l'ordonnancement ?",o:["Cela dépend de la règle","Simultanément","Après le NAT","Avant le NAT"],a:3,e:"Le filtrage est évalué en priorité avant le NAT dans l'ordonnancement global des règles."}
+      ]
+    }
+  ]
+},
+// ===================== 5. FILTRAGE =====================
+{
+  section: "Filtrage",
+  subs: [
+    {
+      title: "Généralités",
+      questions: [
+        {q:"Par défaut, tout trafic qui n'est pas explicitement autorisé est :",o:["Journalisé puis autorisé","Autorisé","Mis en file d'attente","Bloqué"],a:3,e:"Par défaut, tout trafic qui n'est pas explicitement autorisé par une règle de filtrage est bloqué."},
+        {q:"Comment doivent être ordonnées les règles de filtrage ?",o:["Par date de création","De la plus généraliste à la plus restrictive","Par ordre alphabétique","De la plus restrictive à la plus généraliste"],a:3,e:"Il est recommandé d'ordonner les règles de la plus restrictive à la plus généraliste."},
+        {q:"Parmi ces critères, lequel NE peut PAS être utilisé dans une règle de filtrage ?",o:["Valeur du champ DSCP","Adresse MAC de destination","Utilisateur authentifié","Adresse IP source/destination"],a:1,e:"L'adresse MAC de destination n'est pas un critère standard. Les critères incluent IP, port, protocole, DSCP, utilisateur, FQDN, géolocalisation."},
+        {q:"Le premier paquet de chaque nouveau flux est confronté aux règles :",o:["De la dernière à la première ligne","De la première à la dernière ligne","Uniquement la première règle","Uniquement les règles implicites"],a:1,e:"Le premier paquet de chaque nouveau flux est confronté aux règles de la première à la dernière ligne."},
+        {q:"Le nombre de règles de filtrage actives dépend de :",o:["La version du firmware","Le nombre d'interfaces","La taille du disque dur","Le modèle de firewall"],a:3,e:"Le nombre de règles de filtrage actives est limité et cette limite dépend du modèle de firewall."}
+      ]
+    },
+    {
+      title: "La notion de « stateful »",
+      questions: [
+        {q:"SPI signifie :",o:["Secure Protocol Inspection","Standard Protocol Interface","Simple Packet Inspection","Stateful Packet Inspection"],a:3,e:"SPI = Stateful Packet Inspection, permettant de garder en mémoire l'état des connexions."},
+        {q:"Grâce au stateful, les réponses d'une connexion autorisée sont :",o:["Soumises à une règle supplémentaire","Bloquées par défaut","Implicitement autorisées","Journalisées uniquement"],a:2,e:"Les réponses faisant partie de la même connexion sont implicitement autorisées grâce au suivi stateful."},
+        {q:"Le suivi stateful s'applique à quels protocoles ?",o:["TCP, SCTP, UDP et ICMP","Tous les protocoles sans exception","TCP et UDP","TCP uniquement"],a:0,e:"Le firewall garde en mémoire l'état des connexions TCP, SCTP et des pseudo-connexions UDP et ICMP."},
+        {q:"L'autorisation d'un flux par une règle de filtrage se fait dans :",o:["Le sens de l'initiation de la connexion uniquement","Aucun sens par défaut","Le sens des réponses uniquement","Les deux sens"],a:0,e:"L'autorisation se fait uniquement dans le sens de l'initiation de la connexion ; les réponses sont implicitement autorisées."},
+        {q:"Le suivi stateful permet de détecter :",o:["Les problèmes matériels","Les anomalies et attaques dans les connexions","Uniquement les virus","Les failles de configuration"],a:1,e:"Le suivi stateful permet de détecter d'éventuelles anomalies ou attaques dans les flux de connexion."}
+      ]
+    },
+    {
+      title: "Ordonnancement des règles de filtrage et de translation",
+      questions: [
+        {q:"Quel est l'ordre de priorité correct des slots de filtrage (du plus prioritaire au moins prioritaire) ?",o:["Global, Local, Implicite","Implicite, Global, Local","Local, Implicite, Global","Local, Global, Implicite"],a:1,e:"L'ordre est : Filtrage implicite (priorité 0) > Filtrage global (1) > Filtrage local (2)."},
+        {q:"Les règles implicites sont accessibles dans quel menu ?",o:["Configuration ⇒ Système ⇒ Règles","Configuration ⇒ Réseau ⇒ Règles","Configuration ⇒ Politique de sécurité ⇒ Règles implicites","Supervision ⇒ Filtrage"],a:2,e:"Les règles implicites sont dans Configuration ⇒ Politique de sécurité ⇒ Règles implicites."},
+        {q:"Que se passe-t-il si l'on désactive une règle implicite liée à un service ?",o:["Le service risque de ne plus fonctionner si le flux n'est pas autorisé autrement","Rien, le service continue de fonctionner","La règle est automatiquement réactivée","Le firewall redémarre"],a:0,e:"Il faut s'assurer que le flux soit autorisé par une règle de priorité moindre (globale ou locale) pour que le service fonctionne."},
+        {q:"Une règle implicite autorise par défaut les connexions vers l'interface Web d'administration sur le port :",o:["8080/tcp","80/tcp","1300/tcp","443/tcp"],a:3,e:"Une règle implicite autorise les connexions HTTPS (443/tcp) sur les interfaces internes pour l'administration."},
+        {q:"Pour afficher les politiques globales dans l'interface Web, il faut :",o:["Contacter le support Stormshield","Activer le mode expert dans la CLI","Installer SMC","Cocher l'option dans les Préférences ⇒ Affichage"],a:3,e:"Il faut cocher 'Afficher les politiques globales' dans le menu Préférences, onglet Affichage."}
+      ]
+    },
+    {
+      title: "Menus « filtrage »",
+      questions: [
+        {q:"Le nom attribué automatiquement à une règle de filtrage est :",o:["Un identifiant hexadécimal modifiable par l'administrateur","Le numéro de la règle","Toujours vide","Rule_1, Rule_2..."],a:0,e:"Le système attribue un nom comme « 1828cd033db_6 », modifiable par l'administrateur."},
+        {q:"La recherche dans les logs s'effectue sur :",o:["Le protocole","L'adresse IP source","Le nom de la règle","Le numéro de la règle"],a:2,e:"La recherche dans les logs et la supervision s'effectue sur le nom de la règle."},
+        {q:"L'assistant « Règle d'inspection SSL » permet de :",o:["Activer le filtrage d'URL","Faciliter l'ajout de règles pour le proxy SSL","Créer un tunnel VPN SSL","Configurer le certificat du portail"],a:1,e:"L'assistant Règle d'inspection SSL facilite l'ajout de règles pour l'activation du proxy SSL."},
+        {q:"Plusieurs règles de filtrage peuvent-elles porter le même nom ?",o:["Oui, mais uniquement dans le slot global","Non, chaque nom doit être unique","Oui, pour faciliter le regroupement","Non, le système l'interdit"],a:2,e:"Plusieurs règles peuvent porter le même nom, ce qui peut être utile à des fins de regroupement."},
+        {q:"Les séparateurs de règles permettent de :",o:["Séparer le filtrage du NAT","Regrouper visuellement les règles et les personnaliser par couleur/commentaire","Bloquer automatiquement les flux","Créer des sous-politiques"],a:1,e:"Les séparateurs regroupent les règles situées en dessous et peuvent être personnalisés par couleur et commentaire."}
+      ]
+    },
+    {
+      title: "Gérer les services Web",
+      questions: [
+        {q:"Les services Web sont identifiés grâce à :",o:["Uniquement des adresses MAC","L'analyse DPI exclusivement","Des listes d'adresses IP et de FQDN","Le contenu des paquets HTTP"],a:2,e:"Le firewall s'appuie sur des listes d'adresses IP et de FQDN classées dans des objets de type Service Web."},
+        {q:"Pour que la détection des services Web fonctionne complètement, il faut :",o:["Activer le mode proxy explicite","Que le firewall voie les flux DNS en clair avec l'analyse protocolaire DNS activée","Activer le proxy HTTP","Installer un agent sur les postes"],a:1,e:"Le firewall doit voir en clair les flux DNS et l'analyse protocolaire DNS doit être activée (niveau IPS ou IDS)."},
+        {q:"Les bases de services Web officiels sont maintenues à jour par :",o:["L'administrateur manuellement","Le client VPN SSL","Le serveur LDAP","Active Update automatiquement"],a:3,e:"La base de services Web officiels est maintenue automatiquement par Active Update."},
+        {q:"L'import de services Web personnalisés s'effectue via :",o:["Un fichier JSON","Un fichier XML","Un fichier CSV","Un fichier YAML"],a:2,e:"L'import s'effectue à l'aide d'un fichier CSV avec une syntaxe stricte."},
+        {q:"Un nom de service Web personnalisé est limité à :",o:["20 caractères alphanumériques","50 caractères","Pas de limite","10 caractères"],a:0,e:"Le nom du service est limité à 20 caractères alphanumériques au maximum."}
+      ]
+    },
+    {
+      title: "Analyseur de cohérence et de conformité",
+      questions: [
+        {q:"L'analyseur de cohérence détecte :",o:["Les erreurs matérielles","Les problèmes de licence","Les situations de recouvrement ou d'incohérence dans la politique de filtrage","Les virus dans les règles"],a:2,e:"L'analyseur détecte les situations de recouvrement ou d'incohérence dans la politique de filtrage."},
+        {q:"Un message avec une croix rouge dans l'analyseur signifie :",o:["L'activation de la politique est bloquée","Une recommandation optionnelle","Un simple avertissement","Un log d'information"],a:0,e:"Les messages avec une croix rouge bloquent l'activation de la politique."},
+        {q:"Un port SMTP avec le protocole UDP est signalé comme :",o:["Ignoré","Valide","Incompatible (SMTP utilise TCP)","Optionnel"],a:2,e:"Le port SMTP est incompatible avec UDP car SMTP utilise le protocole TCP."},
+        {q:"Parmi les recommandations de filtrage, laquelle est correcte ?",o:["Désactiver les règles implicites sauf la règle HA","Ne pas nommer les règles","Laisser toutes les règles implicites activées","Utiliser uniquement des règles globales"],a:0,e:"Il est recommandé de désactiver les règles implicites excepté la règle HA."},
+        {q:"L'ANSSI publie des recommandations pour :",o:["La configuration LDAP","L'installation du client VPN","La définition d'une politique de filtrage réseau d'un pare-feu","La configuration des serveurs Web"],a:2,e:"L'ANSSI publie des recommandations pour la définition d'une politique de filtrage réseau d'un pare-feu."}
+      ]
+    }
+  ]
+},
+// ===================== 6. PROTECTION APPLICATIVE =====================
+{
+  section: "Protection applicative",
+  subs: [
+    {
+      title: "Activation d'un proxy",
+      questions: [
+        {q:"L'activation d'une inspection applicative sur une règle de filtrage démarre :",o:["Un reverse proxy","Un serveur SOCKS","Un proxy explicite","Un proxy transparent"],a:3,e:"L'activation démarre les analyses en mode proxy transparent (pas de modification de la configuration du poste client)."},
+        {q:"En mode proxy transparent, le poste client :",o:["Doit installer un agent","Doit configurer l'adresse du proxy","Doit utiliser un navigateur spécifique","N'a pas besoin de configuration supplémentaire"],a:3,e:"En mode proxy transparent, la configuration du poste client n'est pas modifiée."},
+        {q:"Une analyse en mode IPS seul utilise-t-elle un mécanisme de type proxy ?",o:["Oui, toujours","Cela dépend du protocole","Oui, mais uniquement pour HTTP","Non, le mode IPS n'utilise pas de proxy"],a:3,e:"Une analyse sur une règle en mode IPS seulement n'utilise pas de mécanisme de type proxy."},
+        {q:"Le proxy HTTP permet de :",o:["Uniquement journaliser le trafic","Filtrer les URL, activer l'antivirus et l'antispam","Créer des tunnels VPN","Configurer le routage"],a:1,e:"Le proxy permet le filtrage d'URL, l'analyse antivirale, le filtrage SMTP/antispam et le sandboxing."},
+        {q:"Le proxy se fait passer pour :",o:["Le client auprès du serveur et le serveur auprès du client","Aucune entité (mode passif)","Le routeur auprès du client","Uniquement le serveur"],a:0,e:"Le proxy se fait passer pour le client auprès du serveur et pour le serveur auprès du client."}
+      ]
+    },
+    {
+      title: "Proxy HTTP (filtrage d'URL)",
+      questions: [
+        {q:"La base Extended Web Control (EWC) est fournie par :",o:["ClamAV","Bitdefender","Kaspersky","Symantec"],a:1,e:"EWC est fournie par Bitdefender et hébergée dans le cloud Stormshield."},
+        {q:"Combien de catégories propose la base EWC ?",o:["78","150","30","50"],a:0,e:"EWC propose 78 catégories hébergées dans le cloud."},
+        {q:"Le cache EWC est vidé en cas de :",o:["Mise à jour Active Update","Changement de politique de filtrage","Redémarrage du firewall ou du daemon tproxyd","Expiration du certificat"],a:2,e:"Le cache est vidé en cas de redémarrage du firewall ou du daemon tproxyd."},
+        {q:"Si une URL appartient à deux catégories (une bloquée et une autorisée), que se passe-t-il ?",o:["Le firewall demande à l'utilisateur","L'ordre des règles de filtrage d'URL prime","L'URL est toujours bloquée","L'URL est toujours autorisée"],a:1,e:"C'est l'ordre des règles de filtrage d'URL qui prime quand une URL est dans plusieurs catégories."},
+        {q:"Les pages de blocage personnalisables sont au nombre de :",o:["2","8","4","Illimité"],a:2,e:"Quatre pages de blocage sont personnalisables (BlockPage_XX) avec HTML, CSS et JavaScript."}
+      ]
+    },
+    {
+      title: "Proxy SSL",
+      questions: [
+        {q:"Le proxy SSL s'appuie sur quel mécanisme pour identifier les sites HTTPS sans déchiffrement ?",o:["L'en-tête HTTP Host","Le certificat du serveur","Le SNI (Server Name Indication)","L'adresse IP du serveur"],a:2,e:"Le proxy SSL utilise le SNI envoyé en clair au début du handshake TLS pour identifier le site demandé."},
+        {q:"Les catégories de CN personnalisées sont utilisables dans :",o:["Les politiques de filtrage d'URL","Les politiques de filtrage SSL uniquement","Les règles de NAT","Les objets réseau"],a:1,e:"Les catégories et groupes de CN créés dans le menu URL ne sont référençables que dans les politiques de filtrage SSL."},
+        {q:"Le déchiffrement complet des flux HTTPS est abordé dans quelle formation ?",o:["CSNR","CSNE","CSNTS","CSNA"],a:1,e:"Le déchiffrement des flux HTTPS est détaillé lors de la formation CSNE."},
+        {q:"Lors de la création d'une règle d'inspection SSL via l'assistant, combien de règles sont créées ?",o:["1","4","3","2"],a:3,e:"L'assistant crée 2 règles : une avec action Déchiffrer pour le filtrage SSL et une avec action Passer pour les flux déchiffrés."},
+        {q:"En CSNA, l'action de la règle de filtrage pour le proxy SSL doit être :",o:["Déchiffrer","Bloquer","Analyser","Passer"],a:0,e:"L'action doit être Déchiffrer, bien que seul le filtrage SSL (sans déchiffrement réel) soit appliqué en CSNA."}
+      ]
+    },
+    {
+      title: "Analyse antivirale",
+      questions: [
+        {q:"Quels sont les deux moteurs antivirus disponibles sur les firewalls Stormshield ?",o:["ClamAV et Bitdefender (Antivirus avancé)","Kaspersky et ClamAV","Windows Defender et ClamAV","Avast et Symantec"],a:0,e:"Les deux solutions sont ClamAV (déprécié, gratuit) et l'Antivirus avancé basé sur Bitdefender (option payante)."},
+        {q:"ClamAV est :",o:["Gratuit, intégré par défaut mais déprécié","Payant et recommandé","Uniquement disponible en CSNE","Non disponible sur les modèles SN170"],a:0,e:"ClamAV est intégré gratuitement par défaut mais est marqué comme déprécié."},
+        {q:"L'option Sandboxing Breach Fighter nécessite :",o:["L'antivirus avancé + une option de licence supplémentaire","L'antivirus ClamAV","Aucune licence","Uniquement le mode IPS"],a:0,e:"Le sandboxing Breach Fighter nécessite l'Antivirus avancé et une option de licence supplémentaire."},
+        {q:"Le changement de moteur antiviral provoque :",o:["La perte de la configuration","L'effacement des bases existantes et le téléchargement de nouvelles bases","Un redémarrage automatique du firewall","Aucun changement visible"],a:1,e:"Le changement provoque l'effacement des bases existantes et le téléchargement des nouvelles bases."},
+        {q:"Pendant le téléchargement des nouvelles bases antivirales, l'analyse antivirale :",o:["Échouera","Est désactivée automatiquement","Passe en mode permissif","Continue normalement"],a:0,e:"Durant l'intervalle de téléchargement des nouvelles bases, l'analyse antivirale échouera."}
+      ]
+    },
+    {
+      title: "Prévention d'intrusion et inspection de sécurité",
+      questions: [
+        {q:"Les profils d'inspection de sécurité (IPS) sont configurables :",o:["Par utilisateur","Par protocole applicatif","Uniquement globalement","Par interface réseau"],a:1,e:"Les profils d'inspection permettent de personnaliser les analyses par protocole applicatif."},
+        {q:"Le niveau d'inspection IPS effectue :",o:["Uniquement du filtrage de paquets","Une analyse protocolaire complète avec détection et blocage","Un scan antivirus","Uniquement de la journalisation"],a:1,e:"Le mode IPS (Intrusion Prevention System) analyse les protocoles et bloque les anomalies détectées."},
+        {q:"Le niveau d'inspection IDS effectue :",o:["Le déchiffrement SSL","La détection sans blocage (journalisation)","Aucune analyse","Le blocage des anomalies"],a:1,e:"Le mode IDS (Intrusion Detection System) détecte les anomalies et les journalise sans les bloquer."},
+        {q:"En cas de faux positif en configuration par défaut, il est recommandé de :",o:["Désactiver complètement l'IPS","Créer un profil dédié et le remonter au support","Ignorer le problème","Supprimer toutes les règles"],a:1,e:"Il est préférable de créer un profil dédié et de remonter le faux positif au support technique."},
+        {q:"Les modifications des alarmes IPS doivent être faites :",o:["Au plus générique possible","Dans la CLI uniquement","Au plus spécifique dans un profil dédié","Directement dans les règles implicites"],a:2,e:"Les modifications doivent être faites au plus spécifique, dans un profil dédié appliqué sur les règles identifiant le trafic concerné."}
+      ]
+    }
+  ]
+},
+// ===================== 7. UTILISATEURS & AUTHENTIFICATION =====================
+{
+  section: "Utilisateurs & authentification",
+  subs: [
+    {
+      title: "Introduction et liaison à un annuaire",
+      questions: [
+        {q:"Combien d'annuaires un firewall peut-il supporter simultanément ?",o:["5","Illimité","1","3"],a:0,e:"Le firewall supporte 5 annuaires simultanément : 1 interne + 4 externes, ou 5 externes."},
+        {q:"Les types d'annuaire LDAP/AD externes supportés sont :",o:["Active Directory, LDAP standard, LDAP PosixAccount","Active Directory uniquement","Active Directory et OpenLDAP","LDAP standard uniquement"],a:0,e:"Trois types d'annuaires externes sont supportés : Microsoft AD, LDAP standard et LDAP PosixAccount."},
+        {q:"Le LDAP interne est automatiquement sauvegardé avec :",o:["Rien, il faut le sauvegarder manuellement","Les logs du firewall","La configuration du firewall","Le certificat SSL"],a:2,e:"L'annuaire LDAP interne et les utilisateurs sont automatiquement sauvegardés/restaurés avec la configuration."},
+        {q:"Le protocole sécurisé pour se connecter à un annuaire externe est :",o:["SSH (22/tcp)","LDAP (389/tcp)","LDAPS (636/tcp)","HTTPS (443/tcp)"],a:2,e:"LDAPS sur le port 636/tcp est le protocole sécurisé pour les connexions aux annuaires externes."},
+        {q:"L'annuaire par défaut est identifié dans l'interface par :",o:["Une étoile","La couleur verte","Un cadenas","La mention « default »"],a:1,e:"L'annuaire par défaut s'affiche en vert dans la liste des annuaires."}
+      ]
+    },
+    {
+      title: "Gestion des utilisateurs",
+      questions: [
+        {q:"Lors de l'accès au menu Utilisateurs, la liste des utilisateurs est :",o:["Toujours affichée complètement","Limitée à 100 utilisateurs","Toujours vide (pour des raisons de performance)","Triée par date de création"],a:2,e:"La liste est toujours vide à l'accès au menu pour éviter des problèmes de performances avec les grands annuaires."},
+        {q:"La création d'utilisateurs s'effectue dans :",o:["L'annuaire choisi manuellement","Le premier annuaire ajouté","Tous les annuaires simultanément","L'annuaire désigné par défaut"],a:3,e:"La création s'effectue dans l'annuaire désigné par défaut dans la configuration des annuaires."},
+        {q:"Les paramètres d'un utilisateur sont organisés en combien d'onglets ?",o:["5","2","4","3"],a:3,e:"Les paramètres sont organisés en 3 onglets : Compte, Certificat et Membre des groupes."},
+        {q:"La création d'utilisateurs est impossible lorsque :",o:["Le firewall est en haute disponibilité","Une correspondance d'attributs existe entre le firewall et la base LDAP externe","Plus de 100 utilisateurs existent","L'annuaire est interne"],a:1,e:"La création est impossible dès qu'une correspondance d'attributs existe entre le firewall et la base LDAP externe."},
+        {q:"Le lien « Droits d'accès » dans le menu utilisateurs renvoie vers :",o:["Le portail captif","Configuration ⇒ Utilisateurs ⇒ Droits d'accès, onglet Accès détaillé","La configuration VPN","La politique de filtrage"],a:1,e:"Le lien renvoie vers Configuration ⇒ Utilisateurs ⇒ Droits d'accès, onglet Accès détaillé."}
+      ]
+    },
+    {
+      title: "Les méthodes d'authentification",
+      questions: [
+        {q:"Quelles méthodes d'authentification sont dites « transparentes » ou « implicites » ?",o:["Invité et Parrainage","Kerberos et TOTP","LDAP et RADIUS","SPNEGO, Certificat SSL, SSO"],a:3,e:"Les méthodes transparentes/implicites incluent SPNEGO, Certificat SSL et SSO (Agent SSO AD)."},
+        {q:"La méthode SPNEGO fonctionne avec quel type d'annuaire ?",o:["Active Directory","Tout type d'annuaire","LDAP PosixAccount","LDAP interne"],a:0,e:"SPNEGO fonctionne spécifiquement avec Active Directory."},
+        {q:"Quelles méthodes ne nécessitent pas d'annuaire ?",o:["Invités, Parrainage, Comptes temporaires","LDAP et Kerberos","RADIUS et SPNEGO","Certificat SSL et SSO"],a:0,e:"Les méthodes Invités, Parrainage et Comptes temporaires ne nécessitent pas d'annuaire."},
+        {q:"L'authentification multi-utilisateurs sur une même machine utilise :",o:["La méthode certificat SSL","La méthode SPNEGO","La méthode cookie sur les flux HTTP","La méthode SSO"],a:2,e:"L'authentification multi-utilisateurs sur une même machine utilise la méthode cookie sur les flux HTTP."},
+        {q:"TOTP peut être combiné avec quelles méthodes ?",o:["LDAP interne/externe, Kerberos, RADIUS","Uniquement Active Directory","Uniquement LDAP interne","Invité et Parrainage"],a:0,e:"TOTP peut être combiné avec LDAP interne/externe, Kerberos et RADIUS."}
+      ]
+    },
+    {
+      title: "Le portail captif",
+      questions: [
+        {q:"Combien de profils d'authentification existent sur le portail captif ?",o:["Illimité","10","5","8"],a:1,e:"Il existe 10 profils différents, les 5 premiers étant préconfigurés (Internal, External, Guest, Voucher, Sponsor)."},
+        {q:"Un utilisateur peut se déconnecter du portail captif :",o:["Uniquement par l'administrateur","En redémarrant son poste","Via l'onglet Connexion/Déconnexion du portail ou par fermeture de l'onglet de déconnexion","Uniquement par expiration automatique"],a:2,e:"L'utilisateur peut se déconnecter via le portail captif ou en fermant l'onglet de déconnexion."},
+        {q:"Le profil « Voucher » est préconfiguré pour :",o:["L'authentification LDAP","Le SSO","L'authentification par certificat","Les comptes temporaires"],a:3,e:"Le profil Voucher est préconfiguré pour la méthode d'authentification des comptes temporaires."},
+        {q:"L'administrateur peut forcer la déconnexion d'un utilisateur depuis :",o:["Supervision ⇒ Utilisateurs (clic droit)","La configuration des annuaires","Le portail captif","La CLI uniquement"],a:0,e:"L'administrateur peut forcer la déconnexion depuis Supervision ⇒ Utilisateurs par clic droit."},
+        {q:"Si aucun annuaire par défaut n'est défini sur un profil, l'utilisateur doit :",o:["S'authentifier par certificat","Demander un compte invité","Renseigner son identifiant accompagné du domaine (ex: jsmith@a.net)","Renseigner uniquement son identifiant"],a:2,e:"Sans annuaire par défaut, les utilisateurs doivent renseigner identifiant + domaine (ex: jsmith@a.net)."}
+      ]
+    },
+    {
+      title: "Règles de filtrage pour l'authentification",
+      questions: [
+        {q:"La valeur « Unknown users » dans une règle de filtrage désigne :",o:["Tous les utilisateurs authentifiés","Tout utilisateur non authentifié","Les utilisateurs invités","Les administrateurs"],a:1,e:"Unknown users désigne tout utilisateur non authentifié."},
+        {q:"Pour que la redirection vers le portail captif fonctionne, il faut d'abord :",o:["Autoriser les connexions DNS pour tous les utilisateurs","Activer le proxy HTTP","Configurer un serveur DHCP","Créer un tunnel VPN"],a:0,e:"Sans résolution DNS, il n'y aura pas de requête HTTP et donc pas de redirection vers le portail captif."},
+        {q:"La valeur « Any user@any » désigne :",o:["Uniquement les administrateurs","Tout utilisateur authentifié, quel que soit l'annuaire","Tout utilisateur, authentifié ou non","Aucun utilisateur"],a:1,e:"Any user@any désigne tout utilisateur authentifié, quel que soit l'annuaire ou la méthode utilisés."},
+        {q:"La redirection vers le portail captif fonctionne nativement pour :",o:["HTTPS uniquement","HTTP et HTTPS","HTTP uniquement (HTTPS nécessite le proxy SSL)","Tous les protocoles"],a:2,e:"La redirection fonctionne nativement pour HTTP. Pour HTTPS, il faut activer le proxy SSL (vu en CSNE)."},
+        {q:"L'assistant « Règle d'authentification » crée une règle qui redirige :",o:["Les utilisateurs authentifiés vers Internet","Les utilisateurs non authentifiés vers le portail captif","Les administrateurs vers l'interface Web","Le trafic VPN vers le portail"],a:1,e:"L'assistant crée une règle redirigeant les connexions des utilisateurs non authentifiés vers le portail captif."}
+      ]
+    },
+    {
+      title: "Authentification TOTP et administration",
+      questions: [
+        {q:"TOTP signifie :",o:["Total One-Time Password","Token One-Time Protocol","Temporary Online Token Password","Time-based One-Time Password"],a:3,e:"TOTP = Time-based One-Time Password, un code à usage unique basé sur le temps."},
+        {q:"Le TOTP peut-il être demandé aux administrateurs se connectant en HTTPS ou SSH ?",o:["Uniquement en SSH","Oui","Uniquement en HTTPS","Non"],a:1,e:"Il est possible de demander un code TOTP aux administrateurs qui se connectent en HTTPS ou en SSH."},
+        {q:"Tous les administrateurs peuvent-ils gérer les droits des autres administrateurs ?",o:["Oui","Oui, mais uniquement via la CLI","Non, aucun administrateur ne le peut","Non, seul le super-admin le peut"],a:3,e:"Seul le super-administrateur peut gérer les droits des autres administrateurs."},
+        {q:"L'enrôlement TOTP s'effectue depuis :",o:["Le portail captif","L'interface d'administration","Un serveur RADIUS","La CLI"],a:0,e:"L'enrôlement TOTP s'effectue depuis le portail captif du firewall."},
+        {q:"L'enrôlement des utilisateurs est-il possible avec un annuaire Active Directory ?",o:["Oui, avec des droits spéciaux","Oui, mais uniquement pour les groupes","Oui","Non, car on ne peut pas ajouter d'utilisateurs depuis le firewall avec AD"],a:3,e:"L'enrôlement est impossible avec Active Directory car le firewall ne peut pas ajouter d'utilisateurs dans ce type d'annuaire."}
+      ]
+    },
+    {
+      title: "Politique d'authentification",
+      questions: [
+        {q:"La politique d'authentification définit la méthode à appliquer en fonction de :",o:["L'utilisateur/groupe et l'adresse IP source ou l'interface d'entrée","L'heure de connexion uniquement","Le type de navigateur","Le protocole utilisé"],a:0,e:"La politique d'authentification s'applique en fonction de deux critères : l'utilisateur/groupe et l'adresse IP source ou l'interface d'entrée."},
+        {q:"Plusieurs méthodes d'authentification peuvent-elles être référencées par une seule règle ?",o:["Oui, mais seulement deux","Non, c'est interdit","Non, une méthode par règle","Oui"],a:3,e:"Plusieurs méthodes d'authentification peuvent être référencées par une seule règle de la politique d'authentification."},
+        {q:"Les règles de la politique d'authentification sont appliquées :",o:["Simultanément","Aléatoirement","En fonction de leur ordre (séquentiellement)","Par priorité de méthode"],a:2,e:"Les règles sont appliquées en fonction de leur ordre, de la première à la dernière."},
+        {q:"TOTP est cumulable avec quelles méthodes dans la politique d'authentification ?",o:["LDAP, Kerberos et RADIUS uniquement","Invités et Parrainage","Toutes les méthodes","Certificat SSL et SPNEGO"],a:0,e:"Seules les méthodes LDAP, Kerberos et RADIUS sont cumulables avec TOTP."},
+        {q:"La politique d'authentification est configurée dans :",o:["Configuration ⇒ Réseau","Configuration ⇒ Politique de sécurité","Configuration ⇒ Utilisateurs ⇒ Authentification, onglet Politique d'authentification","Supervision ⇒ Utilisateurs"],a:2,e:"La politique est définie dans Configuration ⇒ Utilisateurs ⇒ Authentification, onglet Politique d'authentification."}
+      ]
+    },
+    {
+      title: "Définir de nouveaux administrateurs",
+      questions: [
+        {q:"Les nouveaux administrateurs sont promus depuis :",o:["Le portail captif","La CLI uniquement","Configuration ⇒ Système ⇒ Administrateurs","Configuration ⇒ Utilisateurs ⇒ Utilisateurs"],a:2,e:"Depuis Configuration ⇒ Système ⇒ Administrateurs, on peut promouvoir un utilisateur LDAP en administrateur."},
+        {q:"Parmi les modèles de droits suivants, lequel N'existe PAS ?",o:["Administrateur avec accès en lecture seule","Administrateur sans droit","Administrateur de comptes temporaires","Administrateur réseau avancé"],a:3,e:"Les modèles disponibles sont : sans droit, lecture seule, tous les droits, comptes temporaires, avec/sans accès aux données sensibles."},
+        {q:"Qui peut modifier le mot de passe de n'importe quel administrateur ?",o:["Uniquement le compte « admin »","Tout administrateur avec tous les droits","Le premier utilisateur créé","Aucun compte ne le peut"],a:0,e:"Seul le compte « admin » peut modifier le mot de passe de tout le monde."},
+        {q:"Un administrateur peut-il modifier le mot de passe d'un autre administrateur ?",o:["Oui, avec les droits utilisateur","Non, chaque administrateur ne peut modifier que le sien","Oui, toujours","Oui, en mode console"],a:1,e:"Un administrateur ne peut pas modifier le mot de passe d'un autre administrateur (sauf admin)."},
+        {q:"Réinitialiser l'enrôlement TOTP d'un administrateur nécessite :",o:["Un accès physique au firewall","N'importe quel compte administrateur","Le compte « admin »","Une restauration d'usine"],a:2,e:"Réinitialiser l'enrôlement d'un administrateur nécessite le compte « admin »."}
+      ]
+    }
+  ]
+},
+// ===================== 8. VPN IPSEC =====================
+{
+  section: "VPN IPsec",
+  subs: [
+    {
+      title: "Concepts et généralités",
+      questions: [
+        {q:"Les deux versions du protocole IKE actuellement utilisées sont :",o:["IKEv1 et IKEv2","IKEv2 et IKEv3","IKEv0 et IKEv1","IKEv1 uniquement"],a:0,e:"Deux versions existent : IKEv1 (RFC 2409, 1998) et IKEv2 (RFC 7296, 2014)."},
+        {q:"Le flux réseau de négociation IKE utilise le port :",o:["TCP/4500","TCP/443","UDP/4500","UDP/500"],a:3,e:"Le flux IKE est transporté par UDP sur le port 500 en source et destination."},
+        {q:"Le protocole ESP a le numéro de protocole IP :",o:["50","51","17 (UDP)","6 (TCP)"],a:0,e:"ESP (Encapsulating Security Payload) a le numéro de protocole IP 50."},
+        {q:"Les deux méthodes d'authentification possibles pour un tunnel IPsec sont :",o:["TOTP et SPNEGO","Clé pré-partagée (PSK) et certificats (PKI)","RADIUS et LDAP","Login/mot de passe et certificat"],a:1,e:"Les deux méthodes sont PSK (Pre-Shared Key) et certificats (PKI)."},
+        {q:"Le NAT-Traversal utilise le port :",o:["TCP/443","UDP/500","UDP/1194","UDP/4500"],a:3,e:"Quand au moins un correspondant est dans un réseau translaté, NAT-Traversal utilise UDP/4500."}
+      ]
+    },
+    {
+      title: "Configuration de tunnel site-à-site",
+      questions: [
+        {q:"Combien de profils de chiffrement préconfigurés existent par phase ?",o:["5","4","3","2"],a:1,e:"Il existe 4 profils préconfigurés par phase : StrongEncryption, GoodEncryption, Mobile et DR."},
+        {q:"La fonction Keepalive sert à :",o:["Chiffrer les données en continu","Provoquer automatiquement la négociation du tunnel même sans trafic","Tester la bande passante du tunnel","Bloquer les connexions inactives"],a:1,e:"Le Keepalive provoque automatiquement la négociation initiale et le renouvellement périodique du tunnel."},
+        {q:"Des règles implicites autorisent automatiquement quels flux pour le VPN IPsec ?",o:["HTTP et HTTPS","ICMP et DNS","UDP/500, UDP/4500 et le protocole ESP","TCP/443 et TCP/8080"],a:2,e:"Des règles implicites autorisent les ports UDP/500, UDP/4500 et le protocole ESP entre les correspondants."},
+        {q:"Les flux entre les usagers du tunnel doivent être :",o:["Automatiquement autorisés","Gérés par le routage dynamique","Explicitement décrits par des règles de filtrage","Bloqués par défaut sans exception"],a:2,e:"Les flux entre les usagers du tunnel doivent être explicitement décrits par des règles de filtrage."},
+        {q:"Les SPI (Security Parameter Index) sont des valeurs sur :",o:["64 bits en binaire","8 bits en ASCII","32 bits en hexadécimal","16 bits en décimal"],a:2,e:"Les SPI sont des valeurs sur 32 bits en format hexadécimal identifiant les SA IPsec."}
+      ]
+    },
+    {
+      title: "Configuration de tunnels multiples",
+      questions: [
+        {q:"Pour interconnecter N sites via des tunnels IPsec, il faut configurer :",o:["N×(N-1)/2 tunnels au total en maillage complet","1 seul tunnel multipoint","N-1 tunnels par site","N tunnels"],a:0,e:"En maillage complet, chaque paire de sites nécessite un tunnel, soit N×(N-1)/2 tunnels au total."},
+        {q:"Un correspondant peut être utilisé dans :",o:["Plusieurs tunnels avec des extrémités de trafic différentes","Autant de tunnels que de règles de filtrage","Uniquement deux tunnels","Un seul tunnel"],a:0,e:"Un même correspondant peut être utilisé dans plusieurs tunnels avec des extrémités de trafic (traffic selectors) différentes."},
+        {q:"Le profil de chiffrement de phase 1 est défini dans :",o:["Les paramètres du correspondant","La politique de filtrage","La configuration réseau","Les paramètres du tunnel"],a:0,e:"Le profil de phase 1 (profil IKE) est défini dans les paramètres du correspondant."},
+        {q:"Le profil de chiffrement de phase 2 est défini :",o:["Sur la ligne des paramètres du tunnel VPN","Dans la configuration système","Dans les règles de filtrage","Dans les paramètres du correspondant"],a:0,e:"Le profil de phase 2 (profil IPsec) est défini sur la ligne des paramètres du tunnel VPN."},
+        {q:"La supervision des tunnels VPN IPsec est accessible depuis :",o:["Traces ⇒ VPN","Les trois menus mentionnés","Configuration ⇒ VPN ⇒ IPsec","Supervision ⇒ Tunnels VPN IPsec"],a:3,e:"La supervision est accessible depuis Supervision ⇒ Tunnels VPN IPsec."}
+      ]
+    },
+    {
+      title: "Virtual Tunneling Interface (VTI)",
+      questions: [
+        {q:"Les VTI utilisent quel mode de fonctionnement IPsec ?",o:["Routage via la VTI distante","Mode passthrough","Mode transport","Correspondance de politique"],a:0,e:"Les VTI utilisent le routage : les routes passant par le tunnel IPsec via les adresses VTI."},
+        {q:"Les deux VTI de chaque extrémité doivent porter des adresses IP :",o:["Quelconques sans relation","Du même plan d'adressage","Identiques","De réseaux publics"],a:1,e:"Les VTI des deux correspondants doivent porter une adresse IP du même plan d'adressage."},
+        {q:"Depuis la v3.3.0, les VTI peuvent utiliser un masque réseau :",o:["/30","/32","/24","/31"],a:3,e:"Depuis la v3.3.0, un adressage en /31 est possible car les VTI sont des liens point-à-point."},
+        {q:"La directive « via Tunnel VPN IPsec » est applicable :",o:["Aux deux modes","Aux tunnels en correspondance de politique uniquement","À aucun mode","Aux VTI uniquement"],a:1,e:"La directive via Tunnel VPN IPsec n'est applicable qu'aux tunnels en correspondance de politique, pas aux VTI."},
+        {q:"Pour les VTI, l'interface d'entrée à sélectionner dans une règle de filtrage est :",o:["Any","L'interface IN","L'interface VTI correspondante","L'interface OUT"],a:2,e:"Pour les VTI, il faut sélectionner la VTI comme interface d'entrée dans la règle autorisant le trafic entrant."}
+      ]
+    }
+  ]
+},
+// ===================== 9. VPN SSL =====================
+{
+  section: "VPN SSL",
+  subs: [
+    {
+      title: "Concepts et généralités",
+      questions: [
+        {q:"Le VPN SSL est basé sur quel logiciel libre ?",o:["OpenVPN","WireGuard","StrongSwan","IPsec Tools"],a:0,e:"Le VPN SSL est géré par le serveur OpenVPN intégré au firmware."},
+        {q:"Les réseaux assignés aux clients VPN SSL sont découpés en sous-réseaux de :",o:["/29","/32","/30","/28"],a:2,e:"Les réseaux VPN SSL sont découpés en sous-réseaux de /30, avec les premiers et derniers utilisés par le serveur."},
+        {q:"Avec un réseau /24 assigné aux clients VPN SSL, combien de clients maximum ?",o:["254","64","62","128"],a:2,e:"Un réseau /24 donne 64 sous-réseaux de /30, dont 2 pour le serveur = 62 clients maximum."},
+        {q:"Les ports par défaut du VPN SSL sont :",o:["80/tcp et 443/tcp","1194/tcp et 1194/udp","8080/tcp et 8443/tcp","443/tcp et 1194/udp"],a:3,e:"Par défaut : 1194/udp pour le VPN SSL UDP et 443/tcp pour le VPN SSL TCP."},
+        {q:"Une fois le tunnel VPN SSL monté, l'utilisateur est considéré comme :",o:["Non authentifié","Authentifié et faisant partie des réseaux internes","En mode bridge","Externe au firewall"],a:1,e:"L'utilisateur récupère une IP du réseau VPN SSL, considéré comme réseau interne, et il est vu comme authentifié."}
+      ]
+    },
+    {
+      title: "Configuration d'un tunnel VPN SSL",
+      questions: [
+        {q:"Les réseaux VPN SSL UDP et TCP doivent être :",o:["Publics","Différents","Identiques","Sur le même VLAN"],a:1,e:"Les réseaux assignés aux clients UDP et TCP doivent être différents."},
+        {q:"La valeur minimale de réseau pouvant être choisie pour les clients VPN SSL est :",o:["/16","/24","/28","/30"],a:2,e:"La valeur minimale pouvant être choisie est un réseau de /28."},
+        {q:"Pour que les clients VPN SSL accèdent au portail d'authentification, quelle règle implicite doit être activée ?",o:["La règle DNS","La règle HA","Autoriser l'accès au portail d'authentification et au VPN SSL (Authd)","La règle SSH"],a:2,e:"La règle implicite 'Autoriser l'accès au portail d'authentification et au VPN SSL pour les interfaces associées aux profils Authd' doit être activée."},
+        {q:"Le paramètre « Réseaux ou machines accessibles » définit :",o:["Les ressources accessibles une fois le tunnel monté","Les clients VPN autorisés","Les serveurs DNS","Les certificats à utiliser"],a:0,e:"Ce paramètre définit les machines ou réseaux auxquels les utilisateurs peuvent avoir accès une fois le tunnel mis en œuvre."},
+        {q:"Les tunnels VPN SSL ouverts sont supervisables depuis :",o:["Traces ⇒ VPN SSL","Configuration ⇒ VPN ⇒ SSL","Supervision ⇒ Tunnels VPN SSL","Configuration ⇒ Réseau"],a:2,e:"Les tunnels VPN SSL ouverts sont visualisables dans Supervision ⇒ Tunnels VPN SSL."}
+      ]
+    },
+    {
+      title: "Zero Trust Network Access (ZTNA)",
+      questions: [
+        {q:"Le ZTNA est disponible depuis quelle version SNS ?",o:["4.3.0","4.8.1","4.6.0","4.2.0"],a:1,e:"La fonctionnalité ZTNA est disponible depuis la version SNS 4.8.1."},
+        {q:"Le ZTNA nécessite quelle version minimale du client VPN SSL Stormshield ?",o:["Version 1.0","Version 2.0","Version 3.0","Version 4.0"],a:3,e:"La fonctionnalité ZTNA nécessite le client VPN SSL Stormshield en version 4.0 ou ultérieure."},
+        {q:"Parmi ces critères, lequel fait partie de la vérification ZTNA ?",o:["Résolution d'écran","Marque du poste client","Antivirus du poste client actif et à jour","Vitesse de connexion du poste"],a:2,e:"Les critères incluent : antivirus actif et à jour, firewall Windows actif, SES installé, droits d'administration de l'utilisateur."},
+        {q:"Un utilisateur avec des droits d'administration sur son poste peut-il établir un tunnel VPN SSL avec ZTNA activé ?",o:["Oui, toujours","Oui, avec un code TOTP","Non, jamais","Non, si le critère est activé dans la politique ZTNA"],a:3,e:"Si le critère 'Interdire les utilisateurs possédant les droits d'administration' est activé, le tunnel est refusé."},
+        {q:"L'option « Autoriser l'établissement de tunnels pour les clients non compatibles avec ZTNA » permet de :",o:["Activer le mode legacy","Contourner les contrôles ZTNA pour les clients incompatibles, au détriment de la sécurité","Renforcer la sécurité","Désactiver complètement le ZTNA"],a:1,e:"Cette option permet de contourner les contrôles ZTNA en cas d'incompatibilité avec certains clients, au détriment de la sécurité."}
+      ]
+    }
+  ]
+},
+// ===================== 10. ANNEXE PROTECTION APPLICATIVE =====================
+{
+  section: "Annexe – Protection applicative",
+  subs: [
+    {
+      title: "Breach Fighter (Sandboxing)",
+      questions: [
+        {q:"Breach Fighter est basé sur :",o:["Un serveur SIEM","Un cloud Stormshield dédié","Un antivirus local","Un agent installé sur les postes"],a:1,e:"La solution Breach Fighter est basée sur un cloud Stormshield dédié offrant plusieurs niveaux d'analyse."},
+        {q:"Combien de niveaux d'analyse Breach Fighter propose-t-il ?",o:["2 (statique et dynamique)","4 (statique, heuristique, dynamique, comportementale)","1 (analyse comportementale)","3 (statique, heuristique, dynamique)"],a:1,e:"Breach Fighter propose 4 niveaux : analyse statique, heuristique, dynamique et comportementale."},
+        {q:"L'analyse comportementale de Breach Fighter fonctionne sur :",o:["Des environnements virtuels Windows","Des machines physiques","Des machines Linux","Des conteneurs Docker"],a:0,e:"L'analyse comportementale rejoue le comportement des malwares sur des environnements virtuels Windows."},
+        {q:"Quels protocoles sont analysés par Breach Fighter ?",o:["FTP, HTTP(S), SMTP(S), POP3(S)","Tous les protocoles IP","DNS et ICMP","HTTP uniquement"],a:0,e:"Les protocoles analysés sont FTP, HTTP(s), SMTP(s) et POP3(s)."},
+        {q:"Selon Stormshield, combien de malwares sur 10 échappent aux antivirus classiques ?",o:["8 sur 10","5 sur 10","9 sur 10","3 sur 10"],a:0,e:"Stormshield indique que 8 malwares sur 10 échappent aux antivirus classiques, justifiant le sandboxing."}
+      ]
+    },
+    {
+      title: "Filtrage SMTP et anti-spam",
+      questions: [
+        {q:"L'analyse anti-spam repose sur quelles deux technologies ?",o:["Analyse par réputation (RBL) et analyse heuristique","Heuristique et machine learning","Signature et sandbox","Base de données et analyse comportementale"],a:0,e:"L'anti-spam utilise l'analyse par réputation (listes noires DNS / RBL) et l'analyse heuristique."},
+        {q:"Pour les flux SMTP entrants translatés, la translation doit s'effectuer dans :",o:["La règle de NAT uniquement","La règle de filtrage qui autorise le flux","La configuration du proxy","Les objets réseau"],a:1,e:"Pour le filtrage SMTP des flux entrants translatés, la translation doit s'effectuer dans la règle de filtrage."},
+        {q:"L'option « Conserver l'adresse IP source originale » est activée par défaut pour :",o:["Les flux entrants (profil smtp_00)","Tous les flux","Les flux sortants","Aucun flux"],a:0,e:"Cette option est activée par défaut pour les flux entrants dans le profil entrant smtp_00."},
+        {q:"L'analyse anti-spam peut s'appliquer sur quels protocoles ?",o:["Tous les protocoles email","SMTP et POP3","SMTP uniquement","HTTP et HTTPS"],a:1,e:"L'analyse anti-spam peut s'appliquer sur les flux SMTP et POP3 (SMTPS et POP3S nécessitent un déchiffrement préalable)."},
+        {q:"La configuration de l'anti-spam s'effectue dans :",o:["Configuration ⇒ Protection applicative ⇒ Antispam","Configuration ⇒ Politique de sécurité","Configuration ⇒ Système","Configuration ⇒ Notifications ⇒ Email"],a:0,e:"La configuration s'effectue dans Configuration ⇒ Protection applicative ⇒ Antispam."}
+      ]
+    },
+    {
+      title: "Réputation des machines",
+      questions: [
+        {q:"Le score de réputation d'un hôte sain qui n'a jamais généré de trafic est :",o:["100","50","0","-1"],a:2,e:"Un hôte sain n'ayant jamais généré de trafic a un score de réputation à zéro."},
+        {q:"Le score de réputation augmente en cas de :",o:["Connexion réussie","Levée d'une alarme, détection virale ou malware Breach Fighter","Authentification LDAP","Passage par le proxy"],a:1,e:"Le score augmente lors de la levée d'une alarme, de la détection d'une charge virale ou d'un malware par Breach Fighter."},
+        {q:"Les scores de réputation sont recalculés dans un intervalle de :",o:["1 à 5 minutes","15 à 30 minutes","24 heures","1 à 2 heures"],a:1,e:"Les scores sont recalculés et pris en compte dans un intervalle de 15 à 30 minutes."},
+        {q:"Après combien de temps un risque est-il ignoré dans le calcul du score ?",o:["6 heures","48 heures","12 heures","24 heures"],a:3,e:"Un risque est ignoré s'il est plus ancien que 24 heures."},
+        {q:"Le score de réputation d'un hôte à 100 sera divisé par deux après :",o:["24 heures","12 heures","1 heure","6 heures"],a:3,e:"Lorsque le score est à 100, il est divisé par deux après 6 heures, puis par quatre après 12 heures."}
+      ]
+    }
+  ]
+},
+// ===================== 11. ANNEXE UTILISATEURS & AUTHENTIFICATION =====================
+{
+  section: "Annexe – Utilisateurs & authentification",
+  subs: [
+    {
+      title: "Enrôlement des utilisateurs",
+      questions: [
+        {q:"L'enrôlement permet aux utilisateurs de :",o:["S'auto-enregistrer depuis le portail captif","Configurer le VPN","Modifier leurs droits d'accès","Créer des règles de filtrage"],a:0,e:"L'enrôlement permet aux utilisateurs de s'auto-enregistrer depuis le portail captif, sous approbation de l'administrateur."},
+        {q:"L'enrôlement peut-il être activé sur un annuaire Active Directory ?",o:["Oui, mais uniquement pour les groupes","Oui, avec un plugin spécial","Oui","Non, car on ne peut pas ajouter d'utilisateurs via le firewall avec AD"],a:3,e:"L'enrôlement ne peut pas être activé sur un annuaire Active Directory."},
+        {q:"Lors de l'ajout d'un annuaire LDAP interne, l'enrôlement peut être activé sur quel profil ?",o:["Tous les profils","Le profil 0 (internal) uniquement","Le profil Guest","Le profil External"],a:1,e:"L'enrôlement ne peut être activé que sur le profil 0 (internal) lors de l'ajout de l'annuaire."},
+        {q:"Après approbation par l'administrateur, l'utilisateur enrôlé est :",o:["Mis en file d'attente","Ajouté automatiquement dans l'annuaire","Notifié par email uniquement","Redirigé vers un formulaire supplémentaire"],a:1,e:"Une fois approuvée, la demande d'enregistrement aboutit à l'ajout automatique de l'utilisateur dans l'annuaire."},
+        {q:"L'enrôlement peut aussi être activé depuis :",o:["Le menu VPN","La configuration réseau","Les règles de filtrage","Le profil d'authentification (configuration avancée)"],a:3,e:"L'enrôlement peut aussi être activé depuis le profil d'authentification, dans l'encadré Enrôlement des utilisateurs de la configuration avancée."}
+      ]
+    },
+    {
+      title: "Méthodes invités, parrainage et comptes temporaires",
+      questions: [
+        {q:"Les comptes temporaires sont créés par :",o:["L'administrateur depuis Configuration ⇒ Utilisateurs ⇒ Comptes temporaires","Le portail captif automatiquement","Les utilisateurs eux-mêmes","Le serveur RADIUS"],a:0,e:"Les comptes temporaires sont ajoutés par l'administrateur depuis Configuration ⇒ Utilisateurs ⇒ Comptes temporaires."},
+        {q:"Le mot de passe des comptes temporaires est :",o:["Généré automatiquement","Identique à l'identifiant","Choisi par l'utilisateur","Toujours « password »"],a:0,e:"Le mot de passe des comptes temporaires est généré automatiquement."},
+        {q:"La méthode « Parrainage » nécessite :",o:["Un parrain ayant les droits de validation","Un certificat SSL","Un annuaire Active Directory","Un serveur RADIUS"],a:0,e:"Le parrainage nécessite un utilisateur local ayant les droits pour valider la requête envoyée par email."},
+        {q:"La méthode « Invités » est typiquement utilisée dans :",o:["Les lieux publics (hôtels, gares, hotspots)","Les réseaux industriels","Les entreprises avec Active Directory","Les datacenters"],a:0,e:"La méthode Invités est généralement utilisée dans des lieux publics comme les hôtels, gares ou hotspots."},
+        {q:"Les méthodes invités, parrainage et comptes temporaires nécessitent-elles un annuaire ?",o:["Oui, un annuaire externe","Oui, Active Directory obligatoirement","Oui, un annuaire interne","Non, elles fonctionnent sans annuaire"],a:3,e:"Ces trois méthodes ne nécessitent pas d'annuaire pour fonctionner."}
+      ]
+    }
+  ]
+},
+// ===================== 12. ANNEXE VPN IPSEC =====================
+{
+  section: "Annexe – VPN IPsec",
+  subs: [
+    {
+      title: "VPN IPsec – Correspondant dynamique",
+      questions: [
+        {q:"Un tunnel anonyme est configuré lorsque :",o:["Les deux correspondants utilisent des certificats","Les deux correspondants ont des IP fixes","Un correspondant a une adresse IP dynamique","Le tunnel utilise IKEv1 exclusivement"],a:2,e:"Un tunnel anonyme est configuré quand un des correspondants (ex: Firewall B) possède une adresse IP dynamique."},
+        {q:"Qui peut initier les négociations dans un tunnel anonyme ?",o:["Aucun, le tunnel est permanent","Uniquement le correspondant avec IP dynamique","Uniquement le correspondant avec IP fixe","Les deux correspondants"],a:1,e:"Seul le correspondant avec IP dynamique (Firewall B) peut initier les négociations car le correspondant A ne connaît pas son IP."},
+        {q:"L'identification du correspondant dynamique se fait par :",o:["Son adresse MAC","Un nom DNS de type FQDN associé à une PSK","Son certificat uniquement","Son adresse IP"],a:1,e:"Le correspondant dynamique est identifié par un FQDN (ex: fw.company-B.net) associé à une PSK."},
+        {q:"La configuration du tunnel anonyme s'effectue dans l'onglet :",o:["ANONYME – UTILISATEURS NOMADES","PROFILS DE CHIFFREMENT","TUNNELS SITE-À-SITE","CORRESPONDANTS"],a:0,e:"La configuration du tunnel anonyme s'effectue via l'onglet ANONYME – UTILISATEURS NOMADES."},
+        {q:"Sur le firewall à IP fixe (A), le champ Remote ID du correspondant anonyme doit être :",o:["Non renseigné (pour accepter plusieurs correspondants)","Renseigné avec « Any »","Renseigné avec l'IP du firewall B","Renseigné avec le FQDN du firewall B"],a:0,e:"Le champ Remote ID ne doit pas être renseigné pour que la configuration soit prête à accepter plusieurs correspondants nomades."}
+      ]
+    }
+  ]
+},
+// ===================== 13. VPN SSL – Compléments =====================
+{
+  section: "VPN SSL – Compléments",
+  subs: [
+    {
+      title: "Filtrage et NAT pour VPN SSL",
+      questions: [
+        {q:"Pour le trafic provenant des tunnels VPN SSL, il est nécessaire de :",o:["Définir des règles de filtrage explicites","Activer uniquement les règles implicites","Désactiver le filtrage pour le VPN SSL","N'ajouter aucune règle supplémentaire"],a:0,e:"Il est nécessaire de définir des règles de filtrage explicites pour gérer le trafic provenant des tunnels VPN SSL."},
+        {q:"Si un client VPN SSL doit accéder à Internet, que faut-il configurer en plus du filtrage ?",o:["Une règle de NAT (translation d'adresses)","Un proxy HTTP","Un serveur DHCP","Un routage dynamique"],a:0,e:"Si des clients doivent utiliser le VPN SSL pour accéder à Internet, une translation d'adresses (NAT) doit être mise en œuvre."},
+        {q:"Quels ports sont réservés et ne peuvent PAS être utilisés pour le VPN SSL ?",o:["80/tcp et 443/tcp","1194/udp et 443/tcp","389/tcp (ldap), 636/tcp (ldaps), 500/udp (isakmp) entre autres","8080/tcp uniquement"],a:2,e:"De nombreux ports sont réservés : ldap (389), ldaps (636), isakmp (500), firewall_srv (1300), etc."},
+        {q:"Le client VPN SSL Stormshield peut protéger ses identifiants stockés avec :",o:["Un certificat","Un mot de passe de chiffrement du fichier de configuration","Un token matériel","Une clé USB"],a:1,e:"Le fichier contenant les identifiants peut être chiffré avec un mot de passe, demandé à chaque démarrage de l'application."},
+        {q:"Les utilisateurs connectés via VPN SSL sont visibles dans quel menu de supervision ?",o:["Supervision ⇒ Utilisateurs (avec la méthode d'auth. VPN SSL)","Supervision ⇒ Tunnels VPN IPsec","Configuration ⇒ VPN","Supervision ⇒ Réseau"],a:0,e:"Les utilisateurs VPN SSL sont visibles dans Supervision ⇒ Utilisateurs avec la colonne Méthode d'auth. indiquant VPN SSL."}
+      ]
+    },
+    {
+      title: "Clients VPN SSL et paramètres avancés",
+      questions: [
+        {q:"Quels clients VPN SSL sont compatibles avec les firewalls Stormshield ?",o:["Le client Stormshield et le client OpenVPN standard","WireGuard et OpenVPN","Uniquement les clients Windows","Uniquement le client Stormshield"],a:0,e:"Le client VPN SSL Stormshield et le client OpenVPN standard sont tous deux compatibles."},
+        {q:"Le client VPN SSL Stormshield est disponible en téléchargement depuis :",o:["vpn.stormshield.eu, mystormshield.eu et le portail captif","Uniquement mystormshield.eu","Uniquement le portail captif","Le Google Play Store"],a:0,e:"Le client est disponible sur vpn.stormshield.eu, l'espace privé mystormshield.eu et le portail captif après authentification."},
+        {q:"L'option « Interdire l'utilisation de serveurs DNS tiers » force le poste client à :",o:["Utiliser un fichier hosts local","Désactiver la résolution DNS","Utiliser uniquement les DNS de l'entreprise récupérés via le tunnel","Utiliser les DNS publics"],a:2,e:"Cette option force le poste à n'utiliser que les serveurs DNS récupérés via le tunnel VPN SSL."},
+        {q:"Le paramètre « Délai avant renégociation des clés » définit :",o:["La période avant qu'une nouvelle session TLS soit renégociée","Le délai de keepalive","La durée d'authentification","Le timeout de connexion"],a:0,e:"Ce paramètre définit la période avant qu'une nouvelle session TLS ne soit renégociée."},
+        {q:"Le fichier de configuration du service VPN SSL peut être téléchargé au format :",o:["Stormshield propriétaire","JSON","OpenVPN","XML"],a:2,e:"Le fichier de configuration peut être téléchargé au format OpenVPN."}
+      ]
+    }
+  ]
+}
+];
+
+// =================== APP LOGIC ===================
+let totalQ = 0;
+let answered = 0;
+let correct = 0;
+let wrong = 0;
+let qIndex = 0;
+
+function init() {
+  const nav = document.getElementById('nav');
+  const content = document.getElementById('content');
+  
+  DATA.forEach((sec, si) => {
+    // Nav button
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn';
+    btn.textContent = sec.section;
+    btn.onclick = () => toggleSection(si);
+    btn.id = 'nav-' + si;
+    nav.appendChild(btn);
+    
+    // Section block
+    const block = document.createElement('div');
+    block.className = 'section-block';
+    block.id = 'sec-' + si;
+    
+    const stitle = document.createElement('div');
+    stitle.className = 'section-title';
+    stitle.textContent = sec.section;
+    block.appendChild(stitle);
+    
+    sec.subs.forEach((sub, subi) => {
+      const subtitle = document.createElement('div');
+      subtitle.className = 'subsection-title';
+      subtitle.textContent = sub.title;
+      block.appendChild(subtitle);
+      
+      sub.questions.forEach((q, qi) => {
+        totalQ++;
+        qIndex++;
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `q-${si}-${subi}-${qi}`;
+        
+        card.innerHTML = `
+          <div class="q-number">Q${qIndex} · ${sec.section} › ${sub.title}</div>
+          <div class="q-text">${q.q}</div>
+          <div class="options">
+            ${q.o.map((opt, oi) => `
+              <div class="option" data-idx="${oi}" onclick="selectOption(${si},${subi},${qi},${oi})">
+                <span class="option-letter">${String.fromCharCode(65+oi)}</span>
+                <span>${opt}</span>
+              </div>
+            `).join('')}
+          </div>
+          <button class="btn-validate" onclick="validate(${si},${subi},${qi})" disabled>Valider</button>
+          <div class="explanation">${q.e}</div>
+        `;
+        block.appendChild(card);
+      });
+    });
+    
+    content.appendChild(block);
+  });
+  
+  document.getElementById('scoreMax').textContent = totalQ;
+}
+
+function toggleSection(si) {
+  const btn = document.getElementById('nav-' + si);
+  const block = document.getElementById('sec-' + si);
+  const isVisible = block.classList.contains('visible');
+  
+  // Toggle
+  if (isVisible) {
+    block.classList.remove('visible');
+    btn.classList.remove('active');
+  } else {
+    block.classList.add('visible');
+    btn.classList.add('active');
+    block.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+function showAll() {
+  DATA.forEach((_, si) => {
+    document.getElementById('sec-' + si).classList.add('visible');
+    document.getElementById('nav-' + si).classList.add('active');
+  });
+}
+
+function selectOption(si, subi, qi, oi) {
+  const card = document.getElementById(`q-${si}-${subi}-${qi}`);
+  if (card.classList.contains('answered-correct') || card.classList.contains('answered-wrong')) return;
+  
+  card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  card.querySelectorAll('.option')[oi].classList.add('selected');
+  card.querySelector('.btn-validate').disabled = false;
+  card.dataset.selected = oi;
+}
+
+function validate(si, subi, qi) {
+  const card = document.getElementById(`q-${si}-${subi}-${qi}`);
+  if (card.classList.contains('answered-correct') || card.classList.contains('answered-wrong')) return;
+  
+  const selected = parseInt(card.dataset.selected);
+  const correctIdx = DATA[si].subs[subi].questions[qi].a;
+  const options = card.querySelectorAll('.option');
+  
+  options.forEach(o => o.classList.add('disabled'));
+  options[correctIdx].classList.add('correct-answer');
+  
+  if (selected === correctIdx) {
+    card.classList.add('answered-correct');
+    correct++;
+  } else {
+    options[selected].classList.add('wrong-answer');
+    card.classList.add('answered-wrong');
+    wrong++;
+  }
+  
+  answered++;
+  card.querySelector('.explanation').classList.add('visible');
+  card.querySelector('.btn-validate').disabled = true;
+  
+  updateScore();
+}
+
+function updateScore() {
+  document.getElementById('scoreOk').textContent = correct;
+  document.getElementById('scoreKo').textContent = wrong;
+  document.getElementById('scoreTotal').textContent = answered;
+}
+
+function resetAll() {
+  correct = 0; wrong = 0; answered = 0;
+  updateScore();
+  document.querySelectorAll('.question-card').forEach(card => {
+    card.classList.remove('answered-correct','answered-wrong');
+    card.querySelectorAll('.option').forEach(o => {
+      o.classList.remove('selected','correct-answer','wrong-answer','disabled');
+    });
+    card.querySelector('.explanation').classList.remove('visible');
+    card.querySelector('.btn-validate').disabled = true;
+    delete card.dataset.selected;
+  });
+}
+
+init();
+</script>
+</body>
+</html>
