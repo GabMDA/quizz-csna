@@ -35,7 +35,7 @@ body {
 .header {
   background: linear-gradient(135deg, #1a1f2e 0%, #0c0f14 50%, #141825 100%);
   border-bottom: 1px solid var(--border);
-  padding: 2rem;
+  padding: 1.2rem 2rem;
   text-align: center;
   position: sticky;
   top: 0;
@@ -225,10 +225,15 @@ body {
 .btn-validate:disabled { opacity: 0.4; cursor: default; }
 
 .show-all-btn {
-  display: block;
-  margin: 1rem auto 2rem;
-  padding: 0.6rem 1.5rem;
-  font-size: 0.85rem;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.82rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-top: 0.8rem;
 }
 
 .reset-btn {
@@ -260,13 +265,15 @@ body {
     <span>|</span>
     <span>Répondu : <span class="total" id="scoreTotal">0</span> / <span id="scoreMax">0</span></span>
   </div>
+  <div class="header-actions">
+    <button class="btn-validate show-all-btn" id="showAllBtn" onclick="showAll()">Afficher toutes les sections</button>
+    <button class="btn-validate show-all-btn reset-btn" onclick="resetAll()">Réinitialiser tout</button>
+  </div>
 </div>
 
 <div class="container">
   <div class="nav-sections" id="nav"></div>
   <div id="content"></div>
-  <button class="btn-validate show-all-btn" id="showAllBtn" onclick="showAll()">Afficher toutes les sections</button>
-  <button class="btn-validate show-all-btn reset-btn" onclick="resetAll()">Réinitialiser tout</button>
 </div>
 
 <script>
