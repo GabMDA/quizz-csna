@@ -1135,20 +1135,42 @@ function updateScore() {
 }
 
 function resetAll() {
-  correct = 0; wrong = 0; answered = 0;
+  correct = 0; wrong = 0; answered = 0; totalQ = 0; qIndex = 0;
   updateScore();
   resetChrono();
-  document.querySelectorAll('.question-card').forEach(card => {
-    card.classList.remove('answered-correct','answered-wrong');
-    card.querySelectorAll('.option').forEach(o => {
-      o.classList.remove('selected','correct-answer','wrong-answer','disabled');
+  // Clear DOM
+  document.getElementById('nav').innerHTML = '';
+  document.getElementById('content').innerHTML = '';
+  // Reshuffle and rebuild
+  shuffleAll();
+  init();
+}
+
+// =================== SHUFFLE ON LOAD ===================
+function fisherYates(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleAll() {
+  DATA.forEach(sec => {
+    sec.subs.forEach(sub => {
+      // Shuffle options within each question
+      sub.questions.forEach(q => {
+        const correctText = q.o[q.a];
+        fisherYates(q.o);
+        q.a = q.o.indexOf(correctText);
+      });
+      // Shuffle question order within each subsection
+      fisherYates(sub.questions);
     });
-    card.querySelector('.explanation').classList.remove('visible');
-    card.querySelector('.btn-validate').disabled = true;
-    delete card.dataset.selected;
   });
 }
 
+shuffleAll();
 init();
 </script>
 </body>
