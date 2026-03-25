@@ -1156,7 +1156,11 @@ function fisherYates(arr) {
 }
 
 function shuffleAll() {
+  // Shuffle sections order
+  fisherYates(DATA);
   DATA.forEach(sec => {
+    // Shuffle subsections order within each section
+    fisherYates(sec.subs);
     sec.subs.forEach(sub => {
       // Shuffle options within each question
       sub.questions.forEach(q => {
